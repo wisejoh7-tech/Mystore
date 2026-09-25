@@ -1,30 +1,89 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
+import 'dart:async';
+import 'package:drop_down/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
 
-import 'package:mobile/main.dart';
+class FakeWebViewControllerDelegate extends PlatformWebViewController {
+  FakeWebViewControllerDelegate(super.params) : super.implementation();
+
+  @override
+  Future<void> setJavaScriptMode(JavaScriptMode javaScriptMode) async {}
+
+  @override
+  Future<void> setBackgroundColor(dynamic color) async {}
+
+  @override
+  Future<void> setUserAgent(String? userAgent) async {}
+
+  @override
+  Future<void> setPlatformNavigationDelegate(
+      PlatformNavigationDelegate handler) async {}
+
+  @override
+  Future<void> loadRequest(LoadRequestParams params) async {}
+}
+
+class FakeWebViewPlatform extends WebViewPlatform {
+  @override
+  PlatformWebViewController createPlatformWebViewController(
+    PlatformWebViewControllerCreationParams params,
+  ) {
+    return FakeWebViewControllerDelegate(params);
+  }
+
+  @override
+  PlatformNavigationDelegate createPlatformNavigationDelegate(
+    PlatformNavigationDelegateCreationParams params,
+  ) {
+    return FakeNavigationDelegate(params);
+  }
+
+  @override
+  PlatformWebViewWidget createPlatformWebViewWidget(
+    PlatformWebViewWidgetCreationParams params,
+  ) {
+    return FakeWebViewWidget(params);
+  }
+}
+
+class FakeNavigationDelegate extends PlatformNavigationDelegate {
+  FakeNavigationDelegate(super.params) : super.implementation();
+
+  @override
+  Future<void> setOnProgress(void Function(int progress) onProgress) async {}
+
+  @override
+  Future<void> setOnPageStarted(void Function(String url) onPageStarted) async {}
+
+  @override
+  Future<void> setOnPageFinished(void Function(String url) onPageFinished) async {}
+
+  @override
+  Future<void> setOnWebResourceError(
+      void Function(WebResourceError error) onWebResourceError) async {}
+
+  @override
+  Future<void> setOnNavigationRequest(
+      FutureOr<NavigationDecision> Function(NavigationRequest request) onNavigationRequest) async {}
+}
+
+class FakeWebViewWidget extends PlatformWebViewWidget {
+  FakeWebViewWidget(super.params) : super.implementation();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox.shrink();
+  }
+}
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  setUpAll(() {
+    WebViewPlatform.instance = FakeWebViewPlatform();
+  });
+
+  testWidgets('MyApp builds correctly smoke test', (WidgetTester tester) async {
     await tester.pumpWidget(const MyApp());
-
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(find.byType(MyApp), findsOneWidget);
   });
 }

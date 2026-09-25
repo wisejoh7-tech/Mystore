@@ -1,5 +1,6 @@
 from .models import Cart
 
+
 def cart_context(request):
     cart_count = 0
     cart_total = 0

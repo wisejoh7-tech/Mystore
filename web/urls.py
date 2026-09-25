@@ -11,7 +11,7 @@ urlpatterns = [
     path("logout/", views.logout_view, name="logout"),
     path("admin-login/", views.admin_login, name="admin_login"),
     path("admin-register/", views.admin_register, name="admin_register"),
-    
+
     # Listings
     path("men/", views.men, name="men"),
     path("women/", views.women, name="women"),
@@ -25,24 +25,24 @@ urlpatterns = [
 
     # Product Detail
     path("product/<str:prod_type>/<int:pk>/", views.product_detail, name="product_detail"),
-    
+
     # Cart
     path("cart/", views.cart_view, name="cart"),
     path("cart/add/", views.add_to_cart, name="add_to_cart"),
     path("cart/remove/", views.remove_from_cart, name="remove_from_cart"),
     path("cart/sync/", views.sync_cart, name="sync_cart"),
     path("cart/data/", views.get_cart_data, name="get_cart_data"),
-    
+
     # Checkout & Orders
     path("pay/", views.pay, name="pay"),
     path("submit_order/", views.submit_order, name="submit_order"),
-    
+
     # Dashboard & Account
     path("dashboard/", views.dashboard, name="dashboard"),
     path("dashboard/settings/update/", views.update_dashboard_settings, name="update_dashboard_settings"),
     path("wishlist/toggle/", views.toggle_wishlist, name="toggle_wishlist"),
     path("review/add/", views.add_review, name="add_review"),
-    
+
     # Help & Info
     path("help/", views.help_center, name="help_center"),
     path("contact/", views.contact, name="contact"),

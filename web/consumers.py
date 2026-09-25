@@ -1,6 +1,7 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 
+
 class NotificationConsumer(AsyncWebsocketConsumer):
     async def label(self):
         return f"user_{self.scope['user'].id}"

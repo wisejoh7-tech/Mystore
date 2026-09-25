@@ -6,16 +6,15 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
+from django.contrib.auth import login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q, Avg, Sum, F
-from django.contrib.admin.views.decorators import staff_member_required
 from django.http import JsonResponse, HttpResponse
 from django.template.loader import get_template
-from datetime import datetime, timedelta
+from datetime import timedelta
 from xhtml2pdf import pisa
 import io
 from .models import User, OTP, shoe, watch, Category, Cart, CartItem, Order, Wishlist, Review, Expense, ContactMessage, Product
@@ -24,8 +23,10 @@ from .tasks import send_otp_email, send_registration_email, send_sms_otp, send_c
 
 logger = logging.getLogger(__name__)
 
+
 def generate_otp():
     return str(random.randint(100000, 999999))
+
 
 def decrement_stock(items_json):
     """Helper to decrement stock and trigger alerts if low"""
@@ -58,6 +59,7 @@ def decrement_stock(items_json):
     except Exception as e:
         logger.error(f"Error reducing stock: {e}")
 
+
 def base(request):
     categories = Category.objects.all()
     featured_shoes = shoe.objects.all()[:8]
@@ -66,7 +68,7 @@ def base(request):
     top_watches = watch.objects.all()[:8]
     men_shoes = shoe.objects.filter(target_audience='Male')[:8]
     women_shoes = shoe.objects.filter(target_audience='Female')[:8]
-    
+
     # New Categories
     appliances = Product.objects.filter(category__name='Home Appliances')[:8]
     accessories = Product.objects.filter(category__name='Computer Accessories')[:8]
@@ -84,7 +86,7 @@ def base(request):
                 recently_viewed_items.append({'type': 'watch', 'item': watch.objects.get(pk=pk)})
             else:
                 recently_viewed_items.append({'type': 'product', 'item': Product.objects.get(pk=pk)})
-        except:
+        except Exception:
             continue
 
     context = {
@@ -99,8 +101,8 @@ def base(request):
         'accessories': accessories,
         'phones': phones,
         'recently_viewed': recently_viewed_items,
-        'free_shipping_threshold': 50000, # Example threshold in Naira
-        'flash_sale_end': (timezone.now() + timedelta(days=2)).isoformat(), # 2 days from now
+        'free_shipping_threshold': 50000,  # Example threshold in Naira
+        'flash_sale_end': (timezone.now() + timedelta(days=2)).isoformat(),  # 2 days from now
     }
 
     # Add admin metrics if staff
@@ -109,26 +111,27 @@ def base(request):
         shoe_val = shoe.objects.aggregate(total=Sum(F('price') * F('stock')))['total'] or 0
         watch_val = watch.objects.aggregate(total=Sum(F('price') * F('stock')))['total'] or 0
         context['admin_total_goods_value'] = shoe_val + watch_val
-        
+
         # 2. Total Collected (Revenue)
         context['admin_total_revenue'] = Order.objects.filter(complete=True).exclude(status='Cancelled').aggregate(revenue=Sum('total'))['revenue'] or 0
-        
+
         # 3. Total Expenses
         total_exp = Expense.objects.aggregate(expenses=Sum('amount'))['expenses'] or 0
         context['admin_total_expenses'] = total_exp
-        
+
         # 4. Net Finance
         context['admin_net_finance'] = context['admin_total_revenue'] - total_exp
-        
+
         # 5. Total Units in Stock
         shoe_units = shoe.objects.aggregate(total=Sum('stock'))['total'] or 0
         watch_units = watch.objects.aggregate(total=Sum('stock'))['total'] or 0
         context['admin_total_units'] = shoe_units + watch_units
-        
+
         # 6. Admin Reg Form
         context['admin_reg_form'] = RegistrationForm()
 
     return render(request, 'base_home.html', context)
+
 
 def register(request):
     if request.method == "POST":
@@ -138,11 +141,11 @@ def register(request):
             user.set_password(form.cleaned_data["password"])
             user.is_active = False  # Deactivate until OTP is verified
             user.save()
-            
+
             # Generate OTP
             code = generate_otp()
             OTP.objects.update_or_create(user=user, defaults={'code': code, 'created_at': timezone.now()})
-            
+
             # Send OTP to both Email and Phone
             send_otp_email.delay(user.email, code)
             if user.phone:
@@ -155,6 +158,7 @@ def register(request):
         form = RegistrationForm()
     return render(request, "register.html", {"form": form})
 
+
 @login_required
 def admin_register_home(request):
     if not request.user.is_staff:
@@ -165,7 +169,7 @@ def admin_register_home(request):
             user = form.save(commit=False)
             user.set_password(form.cleaned_data["password"])
             user.is_staff = True
-            user.is_active = True # Active immediately for admin-created accounts
+            user.is_active = True  # Active immediately for admin-created accounts
             user.save()
             messages.success(request, f"Admin account '{user.username}' created successfully!")
         else:
@@ -174,26 +178,27 @@ def admin_register_home(request):
                     messages.error(request, f"{field}: {error}")
     return redirect("home")
 
+
 def verify_code(request):
     user_id = request.session.get('unverified_user_id')
     if not user_id:
         return redirect("register")
-    
+
     if request.method == "POST":
         code = request.POST.get("code")
         try:
             user = User.objects.get(id=user_id)
             otp = OTP.objects.get(user=user, code=code)
-            
+
             # Check expiration (e.g., 5 minutes)
             if (timezone.now() - otp.created_at).total_seconds() > 300:
                 messages.error(request, "Code expired. Please register again.")
                 return redirect("register")
-            
+
             user.is_active = True
             user.save()
             otp.delete()
-            
+
             login(request, user)
             send_registration_email.delay(user.email, user.username)
             del request.session['unverified_user_id']
@@ -201,8 +206,9 @@ def verify_code(request):
             return redirect("home")
         except (User.DoesNotExist, OTP.DoesNotExist):
             messages.error(request, "Invalid code.")
-            
+
     return render(request, "verify.html")
+
 
 def login_view(request):
     try:
@@ -219,9 +225,8 @@ def login_view(request):
         return render(request, "login.html", {"form": form})
     except Exception as e:
         logger.error(f"Error in login_view: {e}", exc_info=True)
-        # In a real app, you might show a generic error page.
-        # Here we re-raise to see it if possible, or it will continue to 500.
         raise e
+
 
 def login_with_phone(request):
     if request.method == "POST":
@@ -232,23 +237,21 @@ def login_with_phone(request):
                 user = User.objects.get(phone=phone)
                 code = generate_otp()
                 OTP.objects.update_or_create(user=user, defaults={'code': code, 'created_at': timezone.now()})
-                # In a real app, send SMS here. For now, we'll use email as fallback and console/flash for dev.
                 print(f"DEBUG: Phone OTP for {phone} is {code}")
-                
+
                 # Send fallback email if user has one
                 if user.email:
                     send_otp_email.delay(user.email, code)
-                    messages.success(request, f"A login code has been sent to your registered email.")
-                
+                    messages.success(request, "A login code has been sent to your registered email.")
+
                 # Send SMS OTP if user has a phone
                 if user.phone:
                     from .tasks import send_sms_otp
                     send_sms_otp.delay(user.phone, code)
                     messages.success(request, f"A login code has been sent to your phone number: {user.phone}")
-                
-                # Show flash message for development ease (User can see it on the verification page)
+
                 messages.info(request, f"Development Tip: Your OTP code is {code}")
-                
+
                 request.session['phone_login_user_id'] = user.id
                 return redirect("verify_phone_login")
             except User.DoesNotExist:
@@ -257,11 +260,12 @@ def login_with_phone(request):
         form = PhoneLoginForm()
     return render(request, "login_phone.html", {"form": form})
 
+
 def verify_phone_login(request):
     user_id = request.session.get('phone_login_user_id')
     if not user_id:
         return redirect("login_with_phone")
-    
+
     if request.method == "POST":
         code = request.POST.get("code")
         try:
@@ -280,15 +284,17 @@ def verify_phone_login(request):
             messages.error(request, "Invalid or expired code. Please try again.")
     return render(request, "verify_phone.html")
 
+
 def logout_view(request):
     logout(request)
     return redirect("home")
+
 
 def admin_login(request):
     """Admin-only login view"""
     if request.user.is_authenticated and request.user.is_staff:
         return redirect("admin_dashboard")
-    
+
     if request.method == "POST":
         form = LoginForm(data=request.POST)
         if form.is_valid():
@@ -301,15 +307,16 @@ def admin_login(request):
                 messages.error(request, "Admin access only. Please use regular login.")
     else:
         form = LoginForm()
-    
+
     return render(request, "admin_login.html", {"form": form})
+
 
 def admin_register(request):
     """Admin registration page - requires existing admin approval"""
     if not request.user.is_authenticated or not request.user.is_staff:
         messages.error(request, "Admin registration requires staff approval. Contact an administrator.")
         return redirect("home")
-    
+
     if request.method == "POST":
         form = RegistrationForm(request.POST)
         if form.is_valid():
@@ -326,8 +333,9 @@ def admin_register(request):
                     messages.error(request, f"{field}: {error}")
     else:
         form = RegistrationForm()
-    
+
     return render(request, "admin_register.html", {"form": form})
+
 
 def men(request):
     category_filter = request.GET.get('category', '')
@@ -363,6 +371,7 @@ def men(request):
     }
     return render(request, 'men.html', context)
 
+
 def women(request):
     category_filter = request.GET.get('category', '')
     query = request.GET.get('q', '')
@@ -397,9 +406,11 @@ def women(request):
     }
     return render(request, 'women.html', context)
 
+
 def wrist(request):
     watches = watch.objects.all()
     return render(request, 'wristcollection.html', {'watches': watches})
+
 
 def category_view(request, category_name):
     # Standardize name (e.g., 'home-appliances' -> 'Home Appliances')
@@ -417,6 +428,7 @@ def category_view(request, category_name):
         'watches': watches
     })
 
+
 @login_required
 def orders_view(request):
     if request.user.is_authenticated:
@@ -430,13 +442,16 @@ def orders_view(request):
         'clear_cart': clear_cart
     })
 
+
 def collection(request):
     shoes = shoe.objects.filter(target_audience='Collections')
     return render(request, 'collection.html', {'shoes': shoes})
 
+
 def all_categories(request):
     categories = Category.objects.all()
     return render(request, 'all_categories.html', {'categories': categories})
+
 
 def product_detail(request, prod_type, pk):
     if prod_type == 'shoe':
@@ -452,7 +467,7 @@ def product_detail(request, prod_type, pk):
     if item_id in recently_viewed:
         recently_viewed.remove(item_id)
     recently_viewed.insert(0, item_id)
-    request.session['recently_viewed'] = recently_viewed[:6] # Keep last 6
+    request.session['recently_viewed'] = recently_viewed[:6]  # Keep last 6
 
     reviews = product.reviews.all().order_by('-created_at')
     average_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
@@ -484,6 +499,7 @@ def product_detail(request, prod_type, pk):
     }
     return render(request, 'product_detail.html', context)
 
+
 def search(request):
     query = request.GET.get('q', '')
     category_name = request.GET.get('category', '')
@@ -505,6 +521,7 @@ def search(request):
         'query': query,
         'category_name': category_name
     })
+
 
 def live_search(request):
     query = request.GET.get('q', '')
@@ -534,6 +551,7 @@ def live_search(request):
 
     return JsonResponse({'results': results})
 
+
 @login_required
 def dashboard(request):
     orders = Order.objects.filter(user=request.user)
@@ -544,6 +562,7 @@ def dashboard(request):
         'wishlist': wishlist,
         'profile_form': profile_form,
     })
+
 
 @login_required
 def update_dashboard_settings(request):
@@ -570,6 +589,7 @@ def update_dashboard_settings(request):
         'profile_form': form,
     })
 
+
 def cart_view(request):
     cart = get_or_create_cart(request)
     # UX: Suggest some items if cart is empty
@@ -582,7 +602,7 @@ def cart_view(request):
         'upsell_products': upsell_products
     })
 
-# Add other necessary views as placeholders for now to avoid 404s/AttributeErrors
+
 def get_or_create_cart(request):
     if request.user.is_authenticated:
         cart, _ = Cart.objects.get_or_create(user=request.user)
@@ -593,6 +613,7 @@ def get_or_create_cart(request):
             session_key = request.session.session_key
         cart, _ = Cart.objects.get_or_create(session_key=session_key)
     return cart
+
 
 def add_to_cart(request):
     if request.method == "POST":
@@ -624,6 +645,7 @@ def add_to_cart(request):
             return JsonResponse({'status': 'error', 'message': str(e)})
     return JsonResponse({'status': 'error'}, status=400)
 
+
 def remove_from_cart(request):
     if request.method == "POST":
         try:
@@ -635,6 +657,7 @@ def remove_from_cart(request):
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)})
     return JsonResponse({'status': 'error'}, status=400)
+
 
 @login_required
 def sync_cart(request):
@@ -658,7 +681,8 @@ def sync_cart(request):
                         else:
                             cart_item.quantity = min(10, quantity)
                         cart_item.save()
-                    except shoe.DoesNotExist: continue
+                    except shoe.DoesNotExist:
+                        continue
                 elif watch_id:
                     try:
                         prod = watch.objects.get(id=watch_id)
@@ -668,12 +692,15 @@ def sync_cart(request):
                         else:
                             cart_item.quantity = min(10, quantity)
                         cart_item.save()
-                    except watch.DoesNotExist: continue
+                    except watch.DoesNotExist:
+                        continue
 
             return JsonResponse({'status': 'success', 'cart_count': db_cart.items.count()})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)})
     return JsonResponse({'status': 'error'}, status=400)
+
+
 def get_cart_data(request):
     if request.user.is_authenticated:
         cart, _ = Cart.objects.get_or_create(user=request.user)
@@ -682,7 +709,7 @@ def get_cart_data(request):
         if not session_key:
             return JsonResponse({'status': 'ok', 'cart': []})
         cart, _ = Cart.objects.get_or_create(session_key=session_key)
-    
+
     items = []
     for item in cart.items.all():
         prod = item.shoe_item or item.watch_item
@@ -695,21 +722,24 @@ def get_cart_data(request):
                 'image': prod.image.url if prod.image else ''
             })
     return JsonResponse({'status': 'ok', 'cart': items})
+
+
 @login_required
 def pay(request):
     return render(request, 'pay.html', {
         'PAYSTACK_PUBLIC_KEY': settings.PAYSTACK_PUBLIC_KEY
     })
+
+
 @login_required
 def submit_order(request):
     if request.method == "POST":
-        name = request.POST.get('name')
         address = request.POST.get('delivery_address')
         phone = request.POST.get('phone')
         confirmed_acc = request.POST.get('confirmed_account_number')
         payment_method = request.POST.get('payment_method', 'Bank Transfer')
         cart_json = request.POST.get('cart_json')
-        
+
         if not cart_json or cart_json == 'null':
             messages.error(request, "Your cart data is missing. Please try again.")
             return redirect('cart')
@@ -719,13 +749,13 @@ def submit_order(request):
             if not cart_data:
                 messages.error(request, "Your cart is empty.")
                 return redirect('cart')
-                
+
             total_ngn = 0
             for item in cart_data:
                 price = float(item.get('watchPrice') or item.get('shoePrice') or item.get('price') or 0)
                 qty = int(item.get('quantity') or 1)
                 total_ngn += price * qty
-            
+
             # Create Order
             order = Order.objects.create(
                 user=request.user,
@@ -782,12 +812,13 @@ def submit_order(request):
             # Set a session flag to clear local storage cart
             request.session['clear_local_cart'] = True
             return redirect('orders')
-            
+
         except Exception as e:
             messages.error(request, f"Error processing order: {str(e)}")
             return redirect('cart')
-            
+
     return redirect('cart')
+
 
 @login_required
 def toggle_wishlist(request):
@@ -814,6 +845,8 @@ def toggle_wishlist(request):
 
         return JsonResponse({'status': 'success', 'added': added})
     return JsonResponse({'status': 'error'}, status=400)
+
+
 @login_required
 def add_review(request):
     if request.method == "POST":
@@ -824,31 +857,31 @@ def add_review(request):
             else:
                 data = request.POST
 
-            prod_type = data.get('type') # 'shoe' or 'watch'
+            prod_type = data.get('type')  # 'shoe' or 'watch'
             prod_id = data.get('id')
             rating = int(data.get('rating', 5))
             comment = data.get('comment', '')
-            
+
             if prod_type == 'shoe':
                 item = get_object_or_404(shoe, id=prod_id)
                 Review.objects.update_or_create(
-                    user=request.user, 
-                    shoe_item=item, 
+                    user=request.user,
+                    shoe_item=item,
                     defaults={'rating': rating, 'comment': comment}
                 )
             elif prod_type == 'watch':
                 item = get_object_or_404(watch, id=prod_id)
                 Review.objects.update_or_create(
-                    user=request.user, 
-                    watch_item=item, 
+                    user=request.user,
+                    watch_item=item,
                     defaults={'rating': rating, 'comment': comment}
                 )
             else:
                 raise Exception("Invalid product type")
-            
+
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.content_type == 'application/json':
                 return JsonResponse({'status': 'success'})
-            
+
             messages.success(request, "Review submitted!")
             return redirect('orders')
         except Exception as e:
@@ -857,7 +890,11 @@ def add_review(request):
             messages.error(request, f"Error: {str(e)}")
             return redirect('orders')
     return redirect('orders')
-def help_center(request): return render(request, 'help_center.html')
+
+
+def help_center(request):
+    return render(request, 'help_center.html')
+
 
 def contact(request):
     if request.method == "POST":
@@ -879,6 +916,7 @@ def contact(request):
     else:
         form = ContactForm()
     return render(request, 'contact.html', {'form': form})
+
 
 def track_order(request):
     order_id = request.GET.get('order_id')
@@ -905,14 +943,24 @@ def track_order(request):
         'error_msg': error_msg,
         'searched': bool(order_id)
     })
-def order_cancellation(request): return render(request, 'order_cancellation.html')
-def returns_refunds(request): return render(request, 'returns_refunds.html')
-def terms_privacy(request): return render(request, 'terms_privacy.html')
+
+
+def order_cancellation(request):
+    return render(request, 'order_cancellation.html')
+
+
+def returns_refunds(request):
+    return render(request, 'returns_refunds.html')
+
+
+def terms_privacy(request):
+    return render(request, 'terms_privacy.html')
+
 
 def handle_chrome_devtools(request, name):
     """Handle Chrome DevTools .well-known requests gracefully"""
-    from django.http import JsonResponse
     return JsonResponse({}, status=404)
+
 
 @login_required
 def clear_order_history(request):
@@ -920,6 +968,7 @@ def clear_order_history(request):
         Order.objects.filter(user=request.user).delete()
         messages.success(request, "Order history cleared.")
     return redirect('orders')
+
 
 @login_required
 def mark_order_paid(request, order_id):
@@ -936,6 +985,7 @@ def mark_order_paid(request, order_id):
         else:
             messages.warning(request, "This order cannot be marked as paid.")
     return redirect('orders')
+
 
 @login_required
 def initiate_payment(request, order_id):
@@ -964,6 +1014,7 @@ def initiate_payment(request, order_id):
             return JsonResponse({'status': 'error', 'message': res_data.get('message')})
         messages.error(request, "Failed to initialize payment with Paystack.")
         return redirect('orders')
+
 
 def verify_payment(request):
     reference = request.GET.get('reference')
@@ -1011,6 +1062,7 @@ def verify_payment(request):
         messages.error(request, "Payment verification failed.")
         return redirect('orders')
 
+
 @login_required
 def download_invoice(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
@@ -1040,17 +1092,18 @@ def download_invoice(request, order_id):
 
     return HttpResponse("Error generating PDF", status=400)
 
+
 def subscribe_newsletter(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
             email = data.get('email')
-            # In a real app, save to a Newsletter model. For now, we'll log it.
             logger.info(f"New newsletter subscription: {email}")
             return JsonResponse({'status': 'success', 'message': 'Thank you for subscribing!'})
-        except:
+        except Exception:
             return JsonResponse({'status': 'error', 'message': 'Invalid request'})
     return JsonResponse({'status': 'error'}, status=400)
+
 
 @login_required
 def admin_dashboard(request):
@@ -1063,13 +1116,13 @@ def admin_dashboard(request):
     product_inventory_value = Product.objects.aggregate(total=Sum(F('price') * F('stock')))['total'] or 0
     total_inventory_value = shoe_inventory_value + watch_inventory_value + product_inventory_value
 
-    # 2. Total Stock Cost (What you spent to get the stock currently sitting in inventory)
+    # 2. Total Stock Cost
     shoe_stock_cost = shoe.objects.aggregate(total=Sum(F('cost_price') * F('stock')))['total'] or 0
     watch_stock_cost = watch.objects.aggregate(total=Sum(F('cost_price') * F('stock')))['total'] or 0
     product_stock_cost = Product.objects.aggregate(total=Sum(F('cost_price') * F('stock')))['total'] or 0
     total_stock_cost_in_inventory = shoe_stock_cost + watch_stock_cost + product_stock_cost
 
-    # 3. Total Revenue (Goods Sold)
+    # 3. Total Revenue
     completed_orders = Order.objects.filter(complete=True).exclude(status='Cancelled')
     total_revenue = completed_orders.aggregate(total=Sum('total'))['total'] or 0
     total_sales_count = completed_orders.count()
@@ -1088,7 +1141,7 @@ def admin_dashboard(request):
     out_of_stock_products = Product.objects.filter(stock__lte=0).count()
     out_of_stock_count = out_of_stock_shoes + out_of_stock_watches + out_of_stock_products
 
-    # 4. Total Expenses (Registered Expenses)
+    # 4. Total Expenses
     total_expenses = Expense.objects.aggregate(total=Sum('amount'))['total'] or 0
 
     # 5. Total Units in Stock
@@ -1100,17 +1153,11 @@ def admin_dashboard(request):
     # Summary
     net_profit = total_revenue - total_expenses
 
-    total_users = User.objects.count()
-    recent_messages = ContactMessage.objects.all().order_by('-created_at')[:5]
-
     # Low Stock Alerts
     low_stock_shoes = shoe.objects.filter(stock__gt=0, stock__lte=5)
     low_stock_watches = watch.objects.filter(stock__gt=0, stock__lte=5)
-    low_stock_products = Product.objects.filter(stock__gt=0, stock__lte=5)
 
     # Chart Data (last 7 days)
-    from django.utils import timezone
-    from datetime import timedelta
     last_7_days = [(timezone.now() - timedelta(days=i)).date() for i in range(6, -1, -1)]
     revenue_data = []
     expense_data = []
@@ -1125,7 +1172,7 @@ def admin_dashboard(request):
     # Recent items
     recent_orders = Order.objects.all().order_by('-created_at')[:10]
     recent_expenses = Expense.objects.all().order_by('-date')[:10]
-    
+
     context = {
         'total_inventory_value': total_inventory_value,
         'total_stock_cost_in_inventory': total_stock_cost_in_inventory,

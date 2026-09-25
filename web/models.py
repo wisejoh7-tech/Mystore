@@ -1,11 +1,12 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-import json
 from django.core.exceptions import ValidationError
 
+
 def validate_file_size(file):
-    if file.size > 2*1024*1024:
+    if file.size > 2 * 1024 * 1024:
         raise ValidationError("File too large")
+
 
 class User(AbstractUser):
     email = models.EmailField(unique=True)
@@ -33,12 +34,14 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
+
 class Category(models.Model):
     name = models.CharField(max_length=100, null=False)
     description = models.TextField(blank=True, null=True)
 
-    def __str__(self): 
+    def __str__(self):
         return self.name
+
 
 class watch(models.Model):
     name = models.CharField(max_length=100)
@@ -53,6 +56,7 @@ class watch(models.Model):
 
     def __str__(self):
         return f"{self.brand or ''} {self.name}".strip()
+
 
 class shoe(models.Model):
     name = models.CharField(max_length=100)
@@ -75,6 +79,7 @@ class shoe(models.Model):
     def __str__(self):
         return f"{self.brand or ''} {self.name}".strip()
 
+
 class Product(models.Model):
     name = models.CharField(max_length=100)
     image = models.ImageField(upload_to='products/')
@@ -90,6 +95,7 @@ class Product(models.Model):
     def __str__(self):
         return f"[{self.category.name}] {self.name}"
 
+
 # --- OTP MODEL ---
 class OTP(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -99,11 +105,12 @@ class OTP(models.Model):
     def __str__(self):
         return f"OTP for {self.user.username}"
 
+
 # --- NEW MODELS ---
 
 class Cart(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
-    session_key = models.CharField(max_length=40, null=True, blank=True) # for guest users
+    session_key = models.CharField(max_length=40, null=True, blank=True)  # for guest users
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -112,6 +119,7 @@ class Cart(models.Model):
     @property
     def total_price(self):
         return sum(item.total_price for item in self.items.all())
+
 
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, related_name='items', on_delete=models.CASCADE)
@@ -131,6 +139,7 @@ class CartItem(models.Model):
             return p * self.quantity
         return 0
 
+
 class Wishlist(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     shoes = models.ManyToManyField(shoe, blank=True)
@@ -138,6 +147,7 @@ class Wishlist(models.Model):
 
     def __str__(self):
         return f"{self.user.username}'s Wishlist"
+
 
 class Review(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -150,6 +160,7 @@ class Review(models.Model):
     def __str__(self):
         prod = self.shoe_item or self.watch_item
         return f"Review by {self.user.username} on {prod}"
+
 
 class Order(models.Model):
     STATUS_CHOICES = (
@@ -173,6 +184,7 @@ class Order(models.Model):
     @property
     def items_list(self):
         try:
+            import json
             items = json.loads(self.items_json)
             for item in items:
                 # Standardize keys to avoid VariableDoesNotExist in templates
@@ -181,7 +193,7 @@ class Order(models.Model):
                 item['id'] = item.get('shoeId') or item.get('watchId') or item.get('productId') or item.get('id')
                 item['type'] = item.get('type') or ('shoe' if 'shoeId' in item else 'watch' if 'watchId' in item else 'product')
             return items
-        except:
+        except Exception:
             return []
     transaction_id = models.CharField(max_length=100, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -200,6 +212,7 @@ class Order(models.Model):
                 pass
         super().save(*args, **kwargs)
 
+
 class Expense(models.Model):
     CATEGORY_CHOICES = [
         ('Stock', 'Stock Purchase'),
@@ -216,6 +229,7 @@ class Expense(models.Model):
 
     def __str__(self):
         return f"{self.description} - ₦{self.amount}"
+
 
 class ContactMessage(models.Model):
     name = models.CharField(max_length=100)

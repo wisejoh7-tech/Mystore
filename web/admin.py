@@ -1,6 +1,4 @@
 from django.contrib import admin
-
-# Register your models here.
 from .models import User, shoe, Category, Order, watch, Expense, ContactMessage, Product
 
 admin.site.register(User)
@@ -10,6 +8,7 @@ admin.site.register(Order)
 admin.site.register(watch)
 admin.site.register(Expense)
 admin.site.register(Product)
+
 
 @admin.register(ContactMessage)
 class ContactMessageAdmin(admin.ModelAdmin):

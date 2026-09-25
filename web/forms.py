@@ -43,8 +43,10 @@ class LoginForm(AuthenticationForm):
     username = forms.CharField()
     password = forms.CharField(widget=forms.PasswordInput)
 
+
 class PhoneLoginForm(forms.Form):
     phone = forms.CharField(required=True, label="Phone Number")
+
 
 class ContactForm(forms.Form):
     name = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'placeholder': 'Your Name'}))

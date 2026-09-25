@@ -3,14 +3,11 @@ from django.core.mail import send_mail, EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.conf import settings
-from django.utils import timezone
 import logging
-import json
 import os
 
 logger = logging.getLogger(__name__)
 
-# ... (rest of imports)
 
 @shared_task(bind=True, max_retries=3)
 def send_contact_email(self, name, email, subject, message):
@@ -35,6 +32,7 @@ def send_contact_email(self, name, email, subject, message):
     except Exception as exc:
         logger.error(f"Failed to send contact email for {name}: {exc}")
         raise self.retry(exc=exc, countdown=300)
+
 
 @shared_task(bind=True, max_retries=3)
 def send_order_status_update(self, order_id, new_status):
@@ -64,6 +62,7 @@ def send_order_status_update(self, order_id, new_status):
         logger.error(f"Failed to send status update for #{order_id}: {exc}")
         raise self.retry(exc=exc, countdown=300)
 
+
 @shared_task(bind=True, max_retries=3)
 def send_low_stock_alert(self, product_type, product_id, current_stock):
     from .models import shoe, watch
@@ -92,6 +91,7 @@ def send_low_stock_alert(self, product_type, product_id, current_stock):
     except Exception as exc:
         logger.error(f"Failed to send low stock alert for {product_id}: {exc}")
         raise self.retry(exc=exc, countdown=300)
+
 
 @shared_task(bind=True, max_retries=3)
 def send_order_receipt_email(self, order_id):
@@ -129,12 +129,13 @@ def send_order_receipt_email(self, order_id):
         logger.error(f"Failed to send HTML receipt for #{order_id}: {exc}")
         raise self.retry(exc=exc, countdown=300)
 
+
 @shared_task(bind=True, max_retries=3)
 def send_registration_email(self, user_email, username):
     try:
         subject = 'Welcome to MyStore'
         message = f'Hello {username}, your account has been provisioned successfully.'
-        
+
         send_mail(
             subject,
             message,
@@ -147,12 +148,13 @@ def send_registration_email(self, user_email, username):
         logger.error(f"Failed to send registration email to {user_email}: {exc}")
         raise self.retry(exc=exc, countdown=300)
 
+
 @shared_task(bind=True, max_retries=3)
 def send_otp_email(self, user_email, otp_code):
     try:
         subject = 'Your Verification Code - MyStore'
         message = f'Your verification code is: {otp_code}. It will expire in {settings.OTP_EXPIRATION_MINUTES} minutes.'
-        
+
         send_mail(
             subject,
             message,
@@ -165,13 +167,14 @@ def send_otp_email(self, user_email, otp_code):
         logger.error(f"Failed to send OTP to {user_email}: {exc}")
         raise self.retry(exc=exc, countdown=300)
 
+
 @shared_task(bind=True, max_retries=3)
 def send_order_notification(self, order_id, total, confirmed_acc):
     from .models import Order
     try:
         order = Order.objects.select_related('user').get(id=order_id)
         customer_email = order.user.email if order.user else None
-        
+
         subject = f'NEW ORDER PLACED - #{order_id}'
         admin_message = (
             f"A new order has been placed and marked as PAID.\n\n"
@@ -181,7 +184,7 @@ def send_order_notification(self, order_id, total, confirmed_acc):
             f"Confirmed Account Number: {confirmed_acc}\n\n"
             f"Please check your dashboard to process this order."
         )
-        
+
         customer_message = (
             f"Hello {order.user.username if order.user else 'Customer'},\n\n"
             f"Your order #{order_id} has been received and is now being processed.\n\n"
@@ -191,7 +194,7 @@ def send_order_notification(self, order_id, total, confirmed_acc):
             f"- Payment Method: {order.payment_method}\n\n"
             f"Thank you for shopping with MyStore!"
         )
-        
+
         # Send to Admin
         send_mail(
             subject,
@@ -200,7 +203,7 @@ def send_order_notification(self, order_id, total, confirmed_acc):
             [settings.ADMIN_EMAIL],
             fail_silently=False,
         )
-        
+
         # Send to Customer
         if customer_email:
             send_mail(
@@ -210,11 +213,12 @@ def send_order_notification(self, order_id, total, confirmed_acc):
                 [customer_email],
                 fail_silently=False,
             )
-            
+
         return f"Order notifications sent for #{order_id}"
     except Exception as exc:
         logger.error(f"Failed to send order notification for #{order_id}: {exc}")
         raise self.retry(exc=exc, countdown=300)
+
 
 @shared_task(bind=True, max_retries=3)
 def send_sms_otp(self, phone, otp_code):

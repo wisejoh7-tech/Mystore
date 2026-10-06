@@ -361,16 +361,17 @@ OTP_EXPIRATION_MINUTES = 5
 
 
 # -------------------------------------------------
-# EMAIL SETTINGS
+# EMAIL & RESEND SETTINGS
 # -------------------------------------------------
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
-EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
-EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
-EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "False") == "True"
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
+EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.resend.com" if RESEND_API_KEY else "smtp.gmail.com")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587 if not EMAIL_HOST.startswith("smtp.resend.com") else 465))
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True" if EMAIL_PORT == 587 else "False") == "True"
+EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "True" if EMAIL_PORT == 465 else "False") == "True"
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "resend" if RESEND_API_KEY else "")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", RESEND_API_KEY)
 # -------------------------------------------------
 # CELERY SETTINGS
 # -------------------------------------------------

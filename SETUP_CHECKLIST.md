@@ -26,12 +26,14 @@ CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 
-# Email (Gmail SMTP)
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USE_TLS=True
-EMAIL_HOST_USER=your-email@gmail.com
-EMAIL_HOST_PASSWORD=your-app-password
+# Email (Resend or Gmail SMTP)
+RESEND_API_KEY=re_your_resend_api_key
+EMAIL_HOST=smtp.resend.com
+EMAIL_PORT=465
+EMAIL_USE_SSL=True
+EMAIL_HOST_USER=resend
+EMAIL_HOST_PASSWORD=re_your_resend_api_key
+DEFAULT_FROM_EMAIL=onboarding@resend.dev
 ADMIN_EMAIL=your-admin-email@gmail.com
 ```
 

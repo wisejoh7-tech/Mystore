@@ -36,3 +36,4 @@ django-health-check
 django-redis
 flower
 django-jazzmin
+resend

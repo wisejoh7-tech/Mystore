@@ -56,7 +56,13 @@ class ModelTests(TestCase):
         self.assertEqual(items[0]['name'], 'Running Shoes')
 
 
-@override_settings(DEFAULT_FILE_STORAGE='django.core.files.storage.InMemoryStorage')
+@override_settings(
+    STORAGES={
+        "default": {"BACKEND": "django.core.files.storage.InMemoryStorage"},
+        "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+    },
+    DEFAULT_FILE_STORAGE="django.core.files.storage.InMemoryStorage",
+)
 class ViewTests(TestCase):
     def setUp(self):
         self.client = Client()

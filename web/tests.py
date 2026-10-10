@@ -124,3 +124,32 @@ class DatabaseConfigTests(TestCase):
 
         # Empty URL
         self.assertEqual(format_render_database_url(""), "")
+
+
+class AdminPasswordResetTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+    def test_reset_admin_password_management_command(self):
+        from django.core.management import call_command
+        from io import StringIO
+
+        out = StringIO()
+        # Reset password for existing user or create
+        call_command("reset_admin_password", username="admin_test", password="NewPassword123!", email="admin@test.com", stdout=out)
+        user = User.objects.get(username="admin_test")
+        self.assertTrue(user.check_password("NewPassword123!"))
+        self.assertTrue(user.is_staff)
+        self.assertTrue(user.is_superuser)
+
+        # Reset password again
+        call_command("reset_admin_password", username="admin_test", password="UpdatedPassword123!", stdout=out)
+        user.refresh_from_db()
+        self.assertTrue(user.check_password("UpdatedPassword123!"))
+
+    def test_password_reset_views_status_code(self):
+        response = self.client.get(reverse('password_reset'))
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(reverse('password_reset_done'))
+        self.assertEqual(response.status_code, 200)

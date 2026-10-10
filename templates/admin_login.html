@@ -45,8 +45,11 @@
 
                 <!-- Password -->
                 <div class="admin-auth-field">
-                    <label class="admin-auth-label">Password</label>
-                    <div class="admin-auth-password-wrapper">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label class="admin-auth-label" style="margin-bottom: 0;">Password</label>
+                        <a href="{% url 'password_reset' %}" style="font-size: 0.85rem; color: #4F46E5; text-decoration: none;">Forgot Password?</a>
+                    </div>
+                    <div class="admin-auth-password-wrapper" style="margin-top: 6px;">
                         <input type="password" name="password" id="admin-password" placeholder="Enter your password" required class="admin-auth-input password">
                         <i class="fas fa-eye admin-auth-password-toggle" id="togglePassword"></i>
                     </div>

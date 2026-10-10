@@ -61,10 +61,15 @@ SECRET_KEY = get_env_variable(
 
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "drop-web.onrender.com").split(",")
+ALLOWED_HOSTS = [host.strip() for host in os.getenv("ALLOWED_HOSTS", "drop-web.onrender.com,localhost,127.0.0.1").split(",") if host.strip()]
+
+RENDER_EXTERNAL_HOSTNAME = os.getenv("RENDER_EXTERNAL_HOSTNAME")
+if RENDER_EXTERNAL_HOSTNAME and RENDER_EXTERNAL_HOSTNAME not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 CSRF_TRUSTED_ORIGINS = [
-    f"https://{host}" for host in ALLOWED_HOSTS if host != "*"
+    f"https://{host}" if not host.startswith("http://") and not host.startswith("https://") else host
+    for host in ALLOWED_HOSTS if host != "*"
 ] + [
     "https://*.railway.app",
     "https://*.onrender.com",

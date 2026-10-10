@@ -292,14 +292,19 @@ def logout_view(request):
 
 def admin_login(request):
     """Admin-only login view"""
-    if request.user.is_authenticated and request.user.is_staff:
+    if request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser):
         return redirect("admin_dashboard")
 
     if request.method == "POST":
         form = LoginForm(data=request.POST)
         if form.is_valid():
             user = form.get_user()
-            if user.is_staff:
+            if user.is_staff or user.is_superuser:
+                if not user.is_staff:
+                    user.is_staff = True
+                if not user.is_active:
+                    user.is_active = True
+                user.save()
                 login(request, user)
                 messages.success(request, f"Welcome back, {user.username}!")
                 return redirect("admin_dashboard")

@@ -17,6 +17,10 @@ DATABASE_URL=postgres://postgres:postgres@db:5432/postgres
 # Redis & Real-time (Channels)
 REDIS_URL=redis://redis:6379/0
 
+# Google OAuth Configuration
+GOOGLE_CLIENT_ID=your_google_client_id_here
+GOOGLE_CLIENT_SECRET=your_google_client_secret_here
+
 # Paystack API Keys
 PAYSTACK_PUBLIC_KEY=pk_test_your_public_key
 PAYSTACK_SECRET_KEY=sk_test_your_secret_key

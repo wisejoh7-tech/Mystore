@@ -219,3 +219,29 @@ class EmailOrUsernameAuthTests(TestCase):
         self.assertTrue(self.superuser.check_password("NewAdminPassword123!"))
         self.assertTrue(self.superuser.is_staff)
         self.assertTrue(self.superuser.is_superuser)
+
+
+class MiddlewareTests(TestCase):
+    @override_settings(DEBUG=True)
+    def test_async_whitenoise_file_response(self):
+        import asyncio
+        from django.test import RequestFactory
+        from web.middleware import AsyncWhiteNoiseMiddleware, AsyncWhiteNoiseFileResponse
+
+        mw = AsyncWhiteNoiseMiddleware(lambda req: None)
+        factory = RequestFactory()
+        request = factory.get('/static/css/base.css')
+
+        response = mw(request)
+        self.assertIsInstance(response, AsyncWhiteNoiseFileResponse)
+        self.assertTrue(hasattr(response.streaming_content, '__aiter__'))
+
+        async def consume():
+            chunks = []
+            async for chunk in response:
+                chunks.append(chunk)
+            return chunks
+
+        chunks = asyncio.run(consume())
+        response.close()
+        self.assertTrue(len(chunks) > 0)

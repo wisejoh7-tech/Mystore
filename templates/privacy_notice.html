@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Privacy Notice | MyStore{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{% static 'css/legal.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="legal-container">
+    <h1 class="legal-title">Privacy Notice</h1>
+
+    <section class="legal-section">
+        <h2 class="legal-section-title">1. Introduction</h2>
+        <p>At MyStore, we respect your privacy and are committed to protecting your personal data. This Privacy Notice explains how we collect, use, store, and safeguard your personal information when you visit our site or purchase goods from us.</p>
+    </section>
+
+    <section class="legal-section">
+        <h2 class="legal-section-title">2. Information We Collect</h2>
+        <p>We collect personal information necessary to process your transactions and improve your experience. This includes:</p>
+        <ul class="legal-list">
+            <li><strong>Contact Information:</strong> Name, email address, telephone number, and physical shipping address.</li>
+            <li><strong>Account Credentials:</strong> Username, encrypted passwords, and authentication tokens.</li>
+            <li><strong>Transaction Data:</strong> Order details, payment confirmations, and purchase history.</li>
+        </ul>
+    </section>
+
+    <section class="legal-section">
+        <h2 class="legal-section-title">3. How We Use Your Data</h2>
+        <p>Your data is utilized solely for order processing, customer communication, security verification, and service customization. We never sell your personal information to third-party advertisers.</p>
+    </section>
+
+    <section class="legal-section">
+        <h2 class="legal-section-title">4. Security & Payment Processing</h2>
+        <p>All sensitive transactions are processed using encrypted gateways (such as Paystack). We implement strict security protocols to prevent unauthorized access or loss of personal data.</p>
+    </section>
+
+    <div class="legal-footer">
+        <a href="{% url 'terms_privacy' %}" class="btn-primary btn-legal-back">View Terms & Conditions</a>
+    </div>
+</div>
+{% endblock %}

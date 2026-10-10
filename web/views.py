@@ -962,6 +962,34 @@ def terms_privacy(request):
     return render(request, 'terms_privacy.html')
 
 
+def about_us(request):
+    return render(request, 'about_us.html')
+
+
+def careers(request):
+    return render(request, 'careers.html')
+
+
+def express_delivery(request):
+    return render(request, 'express_delivery.html')
+
+
+def privacy_notice(request):
+    return render(request, 'privacy_notice.html')
+
+
+def sell(request):
+    return render(request, 'sell.html')
+
+
+def sales_consultant(request):
+    return render(request, 'sales_consultant.html')
+
+
+def logistics_partner(request):
+    return render(request, 'logistics_partner.html')
+
+
 def handle_chrome_devtools(request, name):
     """Handle Chrome DevTools .well-known requests gracefully"""
     return JsonResponse({}, status=404)

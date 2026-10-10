@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Careers | MyStore{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{% static 'css/support.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="support-page-container large">
+    <h1 class="support-page-title support-header-flex">
+        <span class="material-icons-outlined support-header-icon orange">work</span>
+        Careers at MyStore
+    </h1>
+
+    <div class="support-section-card">
+        <h2 class="border-bottom">Join Our Growing Team</h2>
+        <p class="support-text spaced">
+            At MyStore, we are constantly looking for innovative, driven, and passionate individuals to join our team. Whether you are an expert in e-commerce tech, logistics optimization, marketing, or customer success, we offer a dynamic work environment where your ideas matter.
+        </p>
+
+        <div class="support-note-box">
+            <h3 style="color: var(--jumia-text); margin-bottom: 10px;">Why Work With Us?</h3>
+            <ul class="support-list">
+                <li>Collaborative and inclusive team culture.</li>
+                <li>Competitive compensation and health benefits.</li>
+                <li>Continuous professional development and growth opportunities.</li>
+            </ul>
+        </div>
+
+        <h3 class="margin-top-40">Open Positions</h3>
+        <p class="support-text spaced margin-top-15">
+            We are currently hiring across multiple departments including Engineering, Operations, and Digital Marketing. Interested in starting your journey with us? Send your resume and cover letter to <a href="mailto:careers@mystore.com" class="support-link-orange">careers@mystore.com</a>.
+        </p>
+
+        <div class="support-footer-centered">
+            <a href="{% url 'contact' %}" class="btn-primary display-inline-block">CONTACT HR TEAM</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

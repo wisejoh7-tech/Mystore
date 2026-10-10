@@ -3,6 +3,9 @@
     max-width: 800px;
     margin: 40px auto;
     padding: 20px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 .support-page-container.large {
@@ -76,13 +79,17 @@
 }
 
 .support-text {
-    color: var(--jumia-light-text);
+    color: #333333;
     line-height: 1.6;
+    font-size: 14px;
+    font-weight: 400;
 }
 
 .support-text.spaced {
     line-height: 1.8;
     margin-top: 20px;
+    color: #222222;
+    font-size: 14px;
 }
 
 .support-list {
@@ -120,6 +127,8 @@
 .support-title {
     color: var(--jumia-dark);
     margin-bottom: 20px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
 }
 
 .support-title.small {

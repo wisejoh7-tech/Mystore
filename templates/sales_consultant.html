@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Become a Sales Consultant | MyStore{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{% static 'css/support.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="support-page-container large">
+    <h1 class="support-page-title support-header-flex">
+        <span class="material-icons-outlined support-header-icon orange">groups</span>
+        Become a Sales Consultant
+    </h1>
+
+    <div class="support-section-card">
+        <h2 class="border-bottom">Earn Commissions by Recommending Products</h2>
+        <p class="support-text spaced">
+            Join the MyStore Independent Consultant Program and earn attractive commissions by introducing customers to our extensive catalog of shoes, watches, and lifestyle electronics. Work on your own terms with full schedule flexibility.
+        </p>
+
+        <div class="support-note-box">
+            <h3 style="color: var(--jumia-text); margin-bottom: 10px;">Program Highlights</h3>
+            <ul class="support-list">
+                <li>High competitive commission rates on every successful referral order.</li>
+                <li>Access to promotional tools, banners, and personalized product links.</li>
+                <li>Monthly performance bonuses and sales leaderboard rewards.</li>
+            </ul>
+        </div>
+
+        <h3 class="margin-top-40">How to Get Started</h3>
+        <p class="support-text spaced margin-top-15">
+            Signing up is quick and free. Simply submit your application online, receive your consultant ID, and start earning commission immediately on every customer sale.
+        </p>
+
+        <div class="support-footer-centered">
+            <a href="{% url 'contact' %}" class="btn-primary display-inline-block">APPLY AS SALES CONSULTANT</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

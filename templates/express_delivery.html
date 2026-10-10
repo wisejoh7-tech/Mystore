@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Express Delivery | MyStore{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{% static 'css/support.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="support-page-container large">
+    <h1 class="support-page-title support-header-flex">
+        <span class="material-icons-outlined support-header-icon orange">speed</span>
+        MyStore Express Delivery
+    </h1>
+
+    <div class="support-section-card">
+        <h2 class="border-bottom">Fast & Guaranteed Same-Day Shipping</h2>
+        <p class="support-text spaced">
+            Need your order in a hurry? MyStore Express Delivery ensures that eligible products are prioritized in our fulfillment network and delivered directly to your doorstep in record time.
+        </p>
+
+        <div class="support-policy-box">
+            <h3 class="support-policy-title">Express Delivery Benefits</h3>
+            <ul class="support-policy-list">
+                <li><strong>Same-Day Dispatch:</strong> Orders placed before 12:00 PM are processed and shipped the same day.</li>
+                <li><strong>Priority Handling:</strong> Express orders receive top-priority packing and courier dispatch.</li>
+                <li><strong>Real-Time Tracking:</strong> Live SMS and email updates at every step of the delivery journey.</li>
+            </ul>
+        </div>
+
+        <h3 class="margin-top-40">How Express Shipping Works</h3>
+        <ol class="support-list margin-top-15">
+            <li>Look for items marked with the <strong>Express Delivery</strong> badge during browsing.</li>
+            <li>Add your selected products to the cart and proceed to checkout.</li>
+            <li>Select "Express Delivery" under shipping options.</li>
+            <li>Sit back and receive your order within 24 hours guaranteed!</li>
+        </ol>
+
+        <div class="support-footer-centered">
+            <a href="{% url 'track_order' %}" class="btn-primary display-inline-block">TRACK YOUR EXPRESS SHIPMENT</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

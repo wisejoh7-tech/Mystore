@@ -37,8 +37,11 @@
             </div>
 
             <div class="form-group-auth">
-                <label for="{{ form.password.id_for_label }}">Password</label>
-                <div class="password-wrapper">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <label for="{{ form.password.id_for_label }}" style="margin-bottom: 0;">Password</label>
+                    <a href="{% url 'password_reset' %}" style="font-size: 0.85rem; color: #4F46E5; text-decoration: none;">Forgot Password?</a>
+                </div>
+                <div class="password-wrapper" style="margin-top: 6px;">
                     {{ form.password }}
                     <span class="material-icons-outlined toggle-password">visibility_off</span>
                 </div>

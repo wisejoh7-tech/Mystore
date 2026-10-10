@@ -194,6 +194,38 @@ ASGI_APPLICATION = "drop.asgi.application"
 # DATABASE
 # -------------------------------------------------
 
+def format_render_database_url(url):
+    """
+    Formats short Render internal database hostnames (e.g. 'dpg-xxxxx-a')
+    by appending '.<region>-postgres.render.com' so DNS resolution works
+    correctly in Docker containers / environments without Render internal search domain.
+    """
+    if not url:
+        return url
+    from urllib.parse import urlsplit, urlunsplit
+    parsed = urlsplit(url)
+    hostname = parsed.hostname
+    if hostname and hostname.startswith("dpg-") and "." not in hostname:
+        region = os.getenv("RENDER_REGION", "oregon")
+        new_hostname = f"{hostname}.{region}-postgres.render.com"
+
+        auth = ""
+        if parsed.username is not None:
+            auth += parsed.username
+            if parsed.password is not None:
+                auth += f":{parsed.password}"
+            auth += "@"
+
+        port_str = f":{parsed.port}" if parsed.port is not None else ""
+        new_netloc = f"{auth}{new_hostname}{port_str}"
+        return urlunsplit((parsed.scheme, new_netloc, parsed.path, parsed.query, parsed.fragment))
+    return url
+
+
+raw_db_url = os.getenv("DATABASE_URL", "postgres://postgres:postgres@127.0.0.1:5432/my_store_db")
+formatted_db_url = format_render_database_url(raw_db_url)
+os.environ["DATABASE_URL"] = formatted_db_url
+
 # If running tests, fallback to sqlite if postgres is not available
 if "test" in sys.argv:
     DATABASES = {
@@ -204,8 +236,8 @@ if "test" in sys.argv:
     }
 else:
     DATABASES = {
-        "default": dj_database_url.config(
-            default=os.getenv("DATABASE_URL", "postgres://postgres:postgres@127.0.0.1:5432/my_store_db"),
+        "default": dj_database_url.parse(
+            formatted_db_url,
             conn_max_age=600,
         )
     }

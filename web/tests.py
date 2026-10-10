@@ -105,3 +105,22 @@ class DatabaseConfigTests(TestCase):
         db_config = dj_database_url.config(default=default_url, conn_max_age=600)
         self.assertIn('ENGINE', db_config)
         self.assertIn('NAME', db_config)
+
+    def test_format_render_database_url(self):
+        from drop.settings import format_render_database_url
+
+        # Short Render database hostname
+        short_url = "postgres://user:pass@dpg-db2hhvui0phs73enh0o0-a/drop_db"
+        formatted = format_render_database_url(short_url)
+        self.assertEqual(formatted, "postgres://user:pass@dpg-db2hhvui0phs73enh0o0-a.oregon-postgres.render.com/drop_db")
+
+        # Already formatted Render database hostname
+        full_url = "postgres://user:pass@dpg-db2hhvui0phs73enh0o0-a.oregon-postgres.render.com/drop_db"
+        self.assertEqual(format_render_database_url(full_url), full_url)
+
+        # Standard non-Render hostname
+        local_url = "postgres://postgres:postgres@127.0.0.1:5432/my_store_db"
+        self.assertEqual(format_render_database_url(local_url), local_url)
+
+        # Empty URL
+        self.assertEqual(format_render_database_url(""), "")

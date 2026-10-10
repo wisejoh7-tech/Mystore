@@ -94,3 +94,14 @@ class ViewTests(TestCase):
         self.assertEqual(ContactMessage.objects.count(), 1)
         msg = ContactMessage.objects.first()
         self.assertEqual(msg.name, 'John Doe')
+
+
+class DatabaseConfigTests(TestCase):
+    def test_database_url_fallback_and_config(self):
+        import os
+        import dj_database_url
+
+        default_url = os.getenv("DATABASE_URL", "postgres://postgres:postgres@127.0.0.1:5432/my_store_db")
+        db_config = dj_database_url.config(default=default_url, conn_max_age=600)
+        self.assertIn('ENGINE', db_config)
+        self.assertIn('NAME', db_config)

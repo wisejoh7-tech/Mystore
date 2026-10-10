@@ -205,7 +205,7 @@ if "test" in sys.argv:
 else:
     DATABASES = {
         "default": dj_database_url.config(
-            default=os.getenv("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/my_store_db"),
+            default=os.getenv("DATABASE_URL", "postgres://postgres:postgres@127.0.0.1:5432/my_store_db"),
             conn_max_age=600,
         )
     }

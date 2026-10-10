@@ -61,6 +61,7 @@ envVarGroups:
   - name: drop-secrets
     envVars:
       - key: SECRET_KEY
+        generateValue: true
       - key: CLOUDINARY_CLOUD_NAME
       - key: CLOUDINARY_API_KEY
       - key: CLOUDINARY_API_SECRET
@@ -80,3 +81,5 @@ envVarGroups:
       - key: PAYSTACK_PUBLIC_KEY
       - key: PAYSTACK_LIVE_MODE
         value: "False"
+      - key: RESEND_API_KEY
+      - key: SENTRY_DSN

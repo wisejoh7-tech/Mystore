@@ -18,5 +18,3 @@ node_modules
 README.md
 docker-compose.yml
 .github
-Dockerfile
-render.yaml

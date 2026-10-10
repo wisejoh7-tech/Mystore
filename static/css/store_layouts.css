@@ -20,31 +20,31 @@
 }
 
 .store-sidebar-title {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 800;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.8px;
 }
 
 .filter-group {
-    margin-bottom: 25px;
+    margin-bottom: 20px;
 }
 
 .filter-label {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     color: #888;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     text-transform: uppercase;
 }
 
 .filter-select {
     width: 100%;
-    padding: 14px; /* Increased from 10px */
-    border-radius: 6px;
+    padding: 8px 10px;
+    border-radius: 4px;
     border: 1px solid #ddd;
-    font-size: 12px;
+    font-size: 11px;
     height: auto;
 }
 
@@ -98,13 +98,13 @@
 
 .categories-title {
     color: var(--jumia-dark);
-    font-size: 20px; /* Reduced from 26px */
-    margin-bottom: 8px;
+    font-size: 16px;
+    margin-bottom: 6px;
 }
 
 .categories-subtitle {
     color: #666;
-    font-size: 12px; /* Reduced from 14px */
+    font-size: 11px;
 }
 
 .categories-grid {
@@ -144,16 +144,17 @@
 }
 
 .category-card-title {
-    font-size: 18px;
+    font-size: 14px;
     color: var(--jumia-dark);
-    margin-bottom: 10px;
+    margin-bottom: 8px;
+    font-weight: 700;
 }
 
 .category-card-desc {
     color: #888;
-    font-size: 12px;
-    margin-bottom: 25px;
-    line-height: 1.6;
+    font-size: 11px;
+    margin-bottom: 20px;
+    line-height: 1.5;
 }
 
 .category-card-link {
@@ -257,12 +258,13 @@
 .category-detail-title {
     color: var(--jumia-dark);
     margin: 0;
-    font-size: 22px; /* Reduced font size for category name */
+    font-size: 16px;
+    font-weight: 700;
 }
 
 .products-found-count {
     color: #888;
-    font-size: 13px; /* Reduced font size for products found */
+    font-size: 11px;
 }
 
 .category-empty-state {

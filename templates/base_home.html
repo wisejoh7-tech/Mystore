@@ -79,17 +79,76 @@
 {% endif %}
 
 <div class="hero-section">
-
+    <div class="hero-categories">
+        <ul>
+            <li><a href="{% url 'all_categories' %}"><span class="material-icons-outlined">apps</span> All Categories</a></li>
+            <li><a href="{% url 'category_view' 'phones' %}"><span class="material-icons-outlined">smartphone</span> Phones & Tablets</a></li>
+            <li><a href="{% url 'men' %}"><span class="material-icons-outlined">male</span> Men's Shoes</a></li>
+            <li><a href="{% url 'women' %}"><span class="material-icons-outlined">female</span> Women's Fashion</a></li>
+            <li><a href="{% url 'wristcollection' %}"><span class="material-icons-outlined">watch</span> Luxury Watches</a></li>
+            <li><a href="{% url 'category_view' 'home-appliances' %}"><span class="material-icons-outlined">kitchen</span> Home Appliances</a></li>
+            <li><a href="{% url 'category_view' 'computer-accessories' %}"><span class="material-icons-outlined">mouse</span> Computer Accessories</a></li>
+            <li><a href="{% url 'collection' %}"><span class="material-icons-outlined">stars</span> Collections</a></li>
+        </ul>
+    </div>
 
     <div class="hero-slider">
-        <!-- Replace with real promo banners -->
         <div class="slide active"
-            style="background-image: url('https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80');">
+            style="background-image: url('https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80');">
         </div>
         <div class="slide"
-            style="background-image: url('https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80');">
+            style="background-image: url('https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80');">
+        </div>
+        <div class="slide"
+            style="background-image: url('https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80');">
+        </div>
+        <div class="slide"
+            style="background-image: url('https://images.unsplash.com/photo-1556911220-e15b29be8c8f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80');">
         </div>
     </div>
+
+    <div class="hero-side-banners">
+        <a href="{% url 'category_view' 'phones' %}" class="hero-side-card" style="background-image: url('https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80');">
+            <div class="hero-side-content">
+                <span class="hero-side-tag">FLASH DEAL</span>
+                <div class="hero-side-title">Phones & Electronics Up to 50% OFF</div>
+            </div>
+        </a>
+        <a href="{% url 'men' %}" class="hero-side-card" style="background-image: url('https://images.unsplash.com/photo-1607082349566-187342175e2f?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80');">
+            <div class="hero-side-content">
+                <span class="hero-side-tag">EXPRESS SALE</span>
+                <div class="hero-side-title">Top Brand Sneakers & Footwear</div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Category Quick Strip Bar -->
+<div class="category-quick-strip">
+    <a href="{% url 'category_view' 'phones' %}" class="quick-cat-item">
+        <div class="quick-cat-icon"><span class="material-icons-outlined">smartphone</span></div>
+        <div class="quick-cat-label">Phones</div>
+    </a>
+    <a href="{% url 'men' %}" class="quick-cat-item">
+        <div class="quick-cat-icon"><span class="material-icons-outlined">directions_run</span></div>
+        <div class="quick-cat-label">Men's Shoes</div>
+    </a>
+    <a href="{% url 'women' %}" class="quick-cat-item">
+        <div class="quick-cat-icon"><span class="material-icons-outlined">sticker_photo</span></div>
+        <div class="quick-cat-label">Women's Shoes</div>
+    </a>
+    <a href="{% url 'wristcollection' %}" class="quick-cat-item">
+        <div class="quick-cat-icon"><span class="material-icons-outlined">watch</span></div>
+        <div class="quick-cat-label">Wrist Watches</div>
+    </a>
+    <a href="{% url 'category_view' 'home-appliances' %}" class="quick-cat-item">
+        <div class="quick-cat-icon"><span class="material-icons-outlined">kitchen</span></div>
+        <div class="quick-cat-label">Appliances</div>
+    </a>
+    <a href="{% url 'category_view' 'computer-accessories' %}" class="quick-cat-item">
+        <div class="quick-cat-icon"><span class="material-icons-outlined">mouse</span></div>
+        <div class="quick-cat-label">Accessories</div>
+    </a>
 </div>
 
 {% if recently_viewed %}

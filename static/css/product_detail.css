@@ -44,58 +44,59 @@
 }
 
 .prod-brand {
-    font-size: 12px;
+    font-size: 10px;
     text-transform: uppercase;
     color: var(--jumia-light-text);
-    margin-bottom: 5px;
+    margin-bottom: 4px;
 }
 
 .prod-title {
-    font-size: 18px;
-    font-weight: 500;
-    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
 }
 
 .prod-rating {
     display: flex;
     align-items: center;
-    gap: 5px;
-    margin-bottom: 20px;
-    font-size: 12px;
+    gap: 4px;
+    margin-bottom: 15px;
+    font-size: 10px;
     color: var(--jumia-orange);
 }
 
 .prod-rating span.material-icons-outlined {
-    font-size: 16px;
+    font-size: 14px;
 }
 
 .prod-rating-text {
     color: var(--jumia-text);
-    margin-left: 5px;
+    margin-left: 4px;
 }
 
 .prod-pricing {
     border-top: 1px solid var(--jumia-border);
     border-bottom: 1px solid var(--jumia-border);
-    padding: 15px 0;
-    margin-bottom: 20px;
+    padding: 12px 0;
+    margin-bottom: 15px;
 }
 
 .prod-price {
-    font-size: 22px;
-    font-weight: bold;
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--jumia-orange);
 }
 
 .prod-old-price {
-    font-size: 12px;
+    font-size: 10px;
     color: var(--jumia-light-text);
     text-decoration: line-through;
 }
 
 .stock-status {
-    font-size: 13px;
+    font-size: 11px;
     font-weight: bold;
-    margin-top: 10px;
+    margin-top: 8px;
 }
 
 .stock-low {
@@ -118,9 +119,9 @@
 }
 
 .prod-desc {
-    font-size: 13px;
-    line-height: 1.6;
-    margin-bottom: 25px;
+    font-size: 11px;
+    line-height: 1.5;
+    margin-bottom: 20px;
 }
 
 .btn-group {

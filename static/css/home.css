@@ -2,17 +2,19 @@
 
 .hero-section {
     display: flex;
-    gap: 15px;
-    margin-bottom: 30px;
+    gap: 12px;
+    margin-bottom: 20px;
+    align-items: stretch;
 }
 
 .hero-categories {
-    width: 200px;
+    width: 210px;
     background: white;
-    border-radius: 4px;
-    padding: 10px 0;
+    border-radius: 6px;
+    padding: 8px 0;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
     display: none;
+    flex-shrink: 0;
 }
 
 @media (min-width: 900px) {
@@ -21,12 +23,127 @@
     }
 }
 
+.hero-side-banners {
+    width: 210px;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+@media (min-width: 1100px) {
+    .hero-side-banners {
+        display: flex;
+    }
+}
+
+.hero-side-card {
+    flex: 1;
+    background-size: cover;
+    background-position: center;
+    border-radius: 6px;
+    padding: 12px;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.hero-side-card:hover {
+    transform: translateY(-2px);
+}
+
+.hero-side-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.7) 100%);
+}
+
+.hero-side-content {
+    position: relative;
+    z-index: 1;
+}
+
+.hero-side-tag {
+    background: var(--jumia-orange);
+    color: white;
+    font-size: 8px;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    display: inline-block;
+    margin-bottom: 4px;
+}
+
+.hero-side-title {
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: white;
+}
+
+/* Quick Category Strip */
+.category-quick-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+.quick-cat-item {
+    background: white;
+    border-radius: 6px;
+    padding: 10px 8px;
+    text-align: center;
+    text-decoration: none;
+    color: var(--jumia-dark);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border: 1px solid var(--jumia-border);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.quick-cat-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(255, 80, 0, 0.15);
+    border-color: var(--jumia-orange);
+    color: var(--jumia-orange);
+}
+
+.quick-cat-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #fff5ee;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--jumia-orange);
+    font-size: 20px;
+}
+
+.quick-cat-label {
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
 .hero-categories ul li a {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 15px;
-    font-size: 11px;
+    gap: 8px;
+    padding: 8px 12px;
+    font-size: 10px;
     color: var(--jumia-text);
     transition: 0.2s;
 }
@@ -34,7 +151,7 @@
 .hero-categories ul li a:hover {
     color: var(--jumia-orange);
     background: var(--jumia-gray);
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .hero-slider {
@@ -75,9 +192,10 @@
 .section-title h3 {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     color: #000;
-    font-size: 16px;
+    font-size: 13px;
+    font-weight: 700;
 }
 
 .product-grid-home {
@@ -150,33 +268,34 @@
 
 .discount-badge-home {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    background: #f6ebd8;
+    top: 8px;
+    right: 8px;
+    background: #fff0e6;
     color: var(--jumia-orange);
-    padding: 2px 6px;
-    font-size: 10px;
+    padding: 2px 5px;
+    font-size: 9px;
     font-weight: bold;
     border-radius: 2px;
+    border: 1px solid rgba(255, 80, 0, 0.2);
 }
 
 .product-name-home {
-    font-size: 12px;
+    font-size: 10px;
     color: var(--jumia-text);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    margin-bottom: 5px;
+    margin-bottom: 4px;
 }
 
 .product-price-home {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 700;
-    color: var(--jumia-dark);
+    color: var(--jumia-orange);
 }
 
 .product-old-price-home {
-    font-size: 10px;
+    font-size: 9px;
     color: var(--jumia-light-text);
     text-decoration: line-through;
     margin-top: 2px;
@@ -342,18 +461,18 @@
 }
 
 .countdown-timer {
-    font-size: 14px;
+    font-size: 11px;
     font-weight: bold;
     background: rgba(0,0,0,0.2);
-    padding: 5px 15px;
+    padding: 4px 12px;
     border-radius: 20px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 
 .countdown-label {
-    font-size: 11px;
-    opacity: 0.8;
+    font-size: 9px;
+    opacity: 0.9;
     text-transform: uppercase;
 }

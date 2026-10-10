@@ -10,9 +10,12 @@
 <div class="admin-dashboard-container">
     <!-- Dashboard Header -->
     <div class="dashboard-header">
-        <div>
-            <h1 class="dashboard-header-title">Business Overview</h1>
-            <p class="dashboard-header-subtitle">Live performance metrics and inventory valuation.</p>
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <img src="{% static 'images/logo.svg' %}" alt="MyStore Logo" style="max-height: 48px;" onerror="this.onerror=null; this.src='{% static 'images/1024609.png' %}';">
+            <div>
+                <h1 class="dashboard-header-title">Business Overview</h1>
+                <p class="dashboard-header-subtitle">Live performance metrics and inventory valuation.</p>
+            </div>
         </div>
         <a href="/admin/" class="dashboard-header-btn">
             <i class="fas fa-cogs"></i> SYSTEM ADMIN

@@ -69,6 +69,10 @@
     position: relative;
 }
 
+.password-wrapper input {
+    padding-right: 45px;
+}
+
 .toggle-password {
     position: absolute;
     right: 15px;
@@ -195,4 +199,57 @@
 
 .footer-link-secondary {
     margin-top: 8px;
+}
+
+@media (max-width: 576px) {
+    .auth-page-container {
+        padding: 20px 12px;
+        min-height: auto;
+    }
+
+    .premium-auth-card {
+        padding: 24px 18px;
+        border-radius: 16px;
+    }
+
+    .auth-header {
+        margin-bottom: 20px;
+    }
+
+    .auth-header h2 {
+        font-size: 22px;
+    }
+
+    .auth-header p {
+        font-size: 13px;
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .form-group input {
+        padding: 12px 14px;
+        font-size: 14px;
+    }
+
+    .btn-premium {
+        padding: 13px;
+        font-size: 14px;
+    }
+
+    .social-divider {
+        margin: 20px 0;
+    }
+
+    .btn-google {
+        padding: 12px;
+        font-size: 13px;
+    }
+
+    .auth-footer {
+        margin-top: 20px;
+        padding-top: 15px;
+        font-size: 13px;
+    }
 }

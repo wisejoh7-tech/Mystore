@@ -92,7 +92,7 @@
 
       {% load socialaccount %}
       <a href="{% provider_login_url 'google' %}" class="btn-google-auth">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo" class="google-icon-img">
+        <img src="{% static 'images/google.svg' %}" alt="Google Logo" class="google-icon-img">
         <span>Register with Google</span>
       </a>
     </div>

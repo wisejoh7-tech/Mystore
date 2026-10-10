@@ -153,3 +153,50 @@ class AdminPasswordResetTests(TestCase):
 
         response = self.client.get(reverse('password_reset_done'))
         self.assertEqual(response.status_code, 200)
+
+
+class EmailOrUsernameAuthTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.superuser = User.objects.create_superuser(
+            username="superadmin",
+            email="admin@mystore.com",
+            password="AdminPassword123!"
+        )
+
+    def test_authenticate_by_username(self):
+        from django.contrib.auth import authenticate
+        user = authenticate(username="superadmin", password="AdminPassword123!")
+        self.assertIsNotNone(user)
+        self.assertEqual(user, self.superuser)
+
+    def test_authenticate_by_email(self):
+        from django.contrib.auth import authenticate
+        user = authenticate(username="admin@mystore.com", password="AdminPassword123!")
+        self.assertIsNotNone(user)
+        self.assertEqual(user, self.superuser)
+
+    def test_authenticate_case_insensitive_email(self):
+        from django.contrib.auth import authenticate
+        user = authenticate(username="ADMIN@MYSTORE.COM", password="AdminPassword123!")
+        self.assertIsNotNone(user)
+        self.assertEqual(user, self.superuser)
+
+    def test_admin_login_with_email(self):
+        response = self.client.post(reverse('admin_login'), {
+            'username': 'admin@mystore.com',
+            'password': 'AdminPassword123!'
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse('admin_dashboard'))
+
+    def test_reset_admin_password_with_email(self):
+        from django.core.management import call_command
+        from io import StringIO
+
+        out = StringIO()
+        call_command("reset_admin_password", username="admin@mystore.com", password="NewAdminPassword123!", stdout=out)
+        self.superuser.refresh_from_db()
+        self.assertTrue(self.superuser.check_password("NewAdminPassword123!"))
+        self.assertTrue(self.superuser.is_staff)
+        self.assertTrue(self.superuser.is_superuser)

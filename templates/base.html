@@ -224,19 +224,19 @@
             <div class="footer-col">
                 <h4>About MyStore</h4>
                 <ul>
-                    <li><a href="#">About Us</a></li>
-                    <li><a href="#">Careers</a></li>
-                    <li><a href="#">Express Delivery</a></li>
+                    <li><a href="{% url 'about_us' %}">About Us</a></li>
+                    <li><a href="{% url 'careers' %}">Careers</a></li>
+                    <li><a href="{% url 'express_delivery' %}">Express Delivery</a></li>
                     <li><a href="{% url 'terms_privacy' %}">Terms and Conditions</a></li>
-                    <li><a href="{% url 'terms_privacy' %}">Privacy Notice</a></li>
+                    <li><a href="{% url 'privacy_notice' %}">Privacy Notice</a></li>
                 </ul>
             </div>
             <div class="footer-col">
                 <h4>Make Money with Us</h4>
                 <ul>
-                    <li><a href="#">Sell on MyStore</a></li>
-                    <li><a href="#">Become a Sales Consultant</a></li>
-                    <li><a href="#">Become a Logistics Service Partner</a></li>
+                    <li><a href="{% url 'sell' %}">Sell on MyStore</a></li>
+                    <li><a href="{% url 'sales_consultant' %}">Become a Sales Consultant</a></li>
+                    <li><a href="{% url 'logistics_partner' %}">Become a Logistics Service Partner</a></li>
                 </ul>
             </div>
         </div>

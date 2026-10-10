@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}About Us | MyStore{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{% static 'css/support.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="support-page-container large">
+    <h1 class="support-page-title support-header-flex">
+        <span class="material-icons-outlined support-header-icon orange">store</span>
+        About MyStore
+    </h1>
+
+    <div class="support-section-card">
+        <h2 class="border-bottom">Who We Are</h2>
+        <p class="support-text spaced">
+            MyStore is a premier online retail platform committed to bringing you the finest selection of quality sneakers, high-end timepieces, smart electronics, and household items. Our mission is to transform your shopping experience by combining authenticity, fast delivery, and exceptional customer service.
+        </p>
+
+        <div class="support-policy-box">
+            <h3 class="support-policy-title">Our Core Values</h3>
+            <ul class="support-policy-list">
+                <li><strong>Uncompromising Quality:</strong> Every item in our store is 100% verified authentic and premium grade.</li>
+                <li><strong>Customer First:</strong> Dedicated support team working round-the-clock to handle all your requests.</li>
+                <li><strong>Speed & Reliability:</strong> Swift order fulfillment and transparent tracking from dispatch to delivery.</li>
+            </ul>
+        </div>
+
+        <h3 class="margin-top-40">Why Choose MyStore?</h3>
+        <p class="support-text spaced margin-top-15">
+            Since our inception, we have served tens of thousands of satisfied customers across the region. With intuitive order management, multi-channel payment integration (including Paystack and direct transfers), and express logistics, MyStore stands out as the ultimate destination for smart shoppers.
+        </p>
+
+        <div class="support-footer-centered">
+            <a href="{% url 'home' %}" class="btn-primary display-inline-block">EXPLORE OUR COLLECTION</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

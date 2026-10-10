@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sell on MyStore | Partner Program{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{% static 'css/support.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="support-page-container large">
+    <h1 class="support-page-title support-header-flex">
+        <span class="material-icons-outlined support-header-icon orange">storefront</span>
+        Sell on MyStore
+    </h1>
+
+    <div class="support-section-card">
+        <h2 class="border-bottom">Grow Your Business With Millions of Customers</h2>
+        <p class="support-text spaced">
+            Partner with MyStore to reach active online shoppers nationwide. Our vendor ecosystem equips you with powerful merchant tools, inventory tracking, secure payout processing, and dedicated account managers to boost your revenue.
+        </p>
+
+        <div class="support-policy-box">
+            <h3 class="support-policy-title">Vendor Benefits</h3>
+            <ul class="support-policy-list">
+                <li><strong>Massive Traffic:</strong> Instant visibility for your items to tens of thousands of daily site visitors.</li>
+                <li><strong>Seamless Logistics:</strong> Access to MyStore's fulfillment centers and delivery networks.</li>
+                <li><strong>Fast Payouts:</strong> Automated earnings disbursement directly to your bank account.</li>
+            </ul>
+        </div>
+
+        <h3 class="margin-top-40">Simple Onboarding Steps</h3>
+        <ol class="support-list margin-top-15">
+            <li>Submit your business details and product catalog for registration.</li>
+            <li>Complete vendor identity and account verification.</li>
+            <li>Upload your inventory and start accepting customer orders!</li>
+        </ol>
+
+        <div class="support-footer-centered">
+            <a href="{% url 'contact' %}" class="btn-primary display-inline-block">BECOME A VENDOR TODAY</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

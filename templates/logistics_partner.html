@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Logistics Service Partner | MyStore{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{% static 'css/support.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="support-page-container large">
+    <h1 class="support-page-title support-header-flex">
+        <span class="material-icons-outlined support-header-icon orange">local_shipping</span>
+        Become a Logistics Service Partner
+    </h1>
+
+    <div class="support-section-card">
+        <h2 class="border-bottom">Partner With Us for Last-Mile Delivery</h2>
+        <p class="support-text spaced">
+            MyStore is expanding its logistics operations and seeking reliable courier companies, fleet owners, and delivery agents to help fulfill thousands of daily orders efficiently across cities and regional hub networks.
+        </p>
+
+        <div class="support-policy-box">
+            <h3 class="support-policy-title">Partner Advantages</h3>
+            <ul class="support-policy-list">
+                <li><strong>Consistent Order Volumes:</strong> High daily shipment volumes to maximize fleet utilization.</li>
+                <li><strong>Prompt Weekly Settlement:</strong> Guaranteed, hassle-free payments for completed deliveries.</li>
+                <li><strong>Tech Integration:</strong> Advanced driver app for route optimization and digital proof of delivery.</li>
+            </ul>
+        </div>
+
+        <h3 class="margin-top-40">Requirements</h3>
+        <ul class="support-list margin-top-15">
+            <li>Registered logistics business or verified courier fleet.</li>
+            <li>Fully operational vehicles/motorcycles with valid licenses and insurance.</li>
+            <li>Commitment to high service standards, safety, and timely deliveries.</li>
+        </ul>
+
+        <div class="support-footer-centered">
+            <a href="{% url 'contact' %}" class="btn-primary display-inline-block">REGISTER AS LOGISTICS PARTNER</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

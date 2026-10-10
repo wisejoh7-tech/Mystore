@@ -63,7 +63,7 @@
 
             {% load socialaccount %}
             <a href="{% provider_login_url 'google' %}" class="btn-google-auth">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" class="google-icon-img">
+                <img src="{% static 'images/google.svg' %}" alt="Google Logo" class="google-icon-img">
                 Sign in with Google
             </a>
 

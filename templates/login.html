@@ -40,7 +40,7 @@
             <div class="form-group-auth">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <label for="{{ form.password.id_for_label }}" style="margin-bottom: 0;">Password</label>
-                    <a href="{% url 'password_reset' %}" style="font-size: 0.85rem; color: #4F46E5; text-decoration: none;">Forgot Password?</a>
+                    <a href="{% url 'password_reset' %}" style="font-size: 0.85rem; color: #4F46E5; text-decoration: none;">Forgotten Password?</a>
                 </div>
                 <div class="password-wrapper" style="margin-top: 6px;">
                     {{ form.password }}
@@ -69,7 +69,10 @@
             </a>
 
             <div class="auth-footer">
-                <div>Don't have an account? <a href="{% url 'register' %}">Create one</a></div>
+                <div>Forgotten password? <a href="{% url 'password_reset' %}">Reset Password</a></div>
+                <div class="auth-footer-sub">
+                    Don't have an account? <a href="{% url 'register' %}">Create one</a>
+                </div>
                 <div class="auth-footer-sub">
                     Prefer phone login? <a href="{% url 'login_with_phone' %}">Login via Phone</a>
                 </div>

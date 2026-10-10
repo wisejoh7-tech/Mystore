@@ -20,6 +20,16 @@ html, body, .wrapper, .content-wrapper {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
 }
 
+/* Jazzmin Admin Login Page Background */
+.login-page {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.82) 0%, rgba(31, 41, 55, 0.88) 100%),
+                url('/static/images/admin_login_bg.jpg') center/cover no-repeat fixed !important;
+}
+
+.login-box {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4) !important;
+}
+
 /* Header (Top Navbar) */
 .main-header {
     background-color: #ffffff !important;

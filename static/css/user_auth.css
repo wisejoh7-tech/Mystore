@@ -3,19 +3,22 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 80vh;
+    min-height: 85vh;
     padding: 40px 20px;
-    background: #fafafa;
+    background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.65)),
+                url('/static/images/user_login_bg.jpg') center/cover no-repeat fixed;
 }
 
 .premium-auth-card {
-    background: white;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     width: 100%;
     max-width: 440px;
     border-radius: 20px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
     padding: 40px;
-    border: 1px solid #f0f0f0;
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .auth-header {

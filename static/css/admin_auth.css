@@ -3,16 +3,19 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #673AB7 0%, #512DA8 100%);
+    background: linear-gradient(135deg, rgba(81, 45, 168, 0.8) 0%, rgba(103, 58, 183, 0.88) 100%),
+                url('/static/images/admin_login_bg.jpg') center/cover no-repeat fixed;
     padding: 20px;
 }
 
 .admin-auth-card {
     width: 100%;
     max-width: 420px;
-    background: white;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-radius: 16px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
     overflow: hidden;
 }
 

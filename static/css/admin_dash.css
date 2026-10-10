@@ -1,8 +1,15 @@
 /* Admin Dashboard Styles */
 
+.admin-dashboard-wrapper {
+    min-height: 100vh;
+    padding: 30px 0 50px 0;
+    background: linear-gradient(rgba(245, 247, 250, 0.88), rgba(245, 247, 250, 0.94)),
+                url('/static/images/admin_dash_bg.jpg') center/cover no-repeat fixed;
+}
+
 .admin-dashboard-container {
     max-width: 1200px;
-    margin: 40px auto;
+    margin: 0 auto;
     padding: 0 20px;
 }
 
@@ -93,11 +100,13 @@
 }
 
 .chart-card {
-    background: white;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     padding: 24px;
     border-radius: 16px;
-    border: 1px solid #f0f0f0;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.02);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
 }
 
 .chart-title {
@@ -115,11 +124,13 @@
 }
 
 .kpi-card {
-    background: white;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     padding: 24px;
     border-radius: 16px;
-    border: 1px solid #f0f0f0;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.02);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
     transition: 0.3s;
 }
 
@@ -200,10 +211,12 @@
 }
 
 .recent-orders-card, .recent-inquiries-card, .expenses-card {
-    background: white;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border-radius: 16px;
-    border: 1px solid #f0f0f0;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.02);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
     overflow: hidden;
 }
 

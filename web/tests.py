@@ -154,6 +154,25 @@ class AdminPasswordResetTests(TestCase):
         response = self.client.get(reverse('password_reset_done'))
         self.assertEqual(response.status_code, 200)
 
+    def test_clear_users_management_command(self):
+        from django.core.management import call_command
+        from io import StringIO
+
+        User.objects.create_user(username="regular1", email="reg1@test.com", password="Password123")
+        User.objects.create_user(username="regular2", email="reg2@test.com", password="Password123")
+        self.assertEqual(User.objects.filter(is_staff=False).count(), 2)
+
+        out = StringIO()
+        call_command("clear_users", stdout=out)
+        self.assertEqual(User.objects.filter(is_staff=False).count(), 0)
+
+    def test_login_page_forgot_password_links(self):
+        response = self.client.get(reverse('login'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, reverse('password_reset'))
+        self.assertContains(response, "Forgotten Password?")
+        self.assertContains(response, "Reset Password")
+
 
 class EmailOrUsernameAuthTests(TestCase):
     def setUp(self):

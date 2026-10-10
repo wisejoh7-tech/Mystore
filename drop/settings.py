@@ -226,8 +226,8 @@ raw_db_url = os.getenv("DATABASE_URL", "postgres://postgres:postgres@127.0.0.1:5
 formatted_db_url = format_render_database_url(raw_db_url)
 os.environ["DATABASE_URL"] = formatted_db_url
 
-# If running tests, fallback to sqlite if postgres is not available
-if "test" in sys.argv:
+# If running tests or USE_SQLITE is set, fallback to sqlite
+if "test" in sys.argv or os.getenv("USE_SQLITE", "False") == "True":
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",

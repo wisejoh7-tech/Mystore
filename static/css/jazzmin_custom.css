@@ -18,12 +18,20 @@
     box-sizing: border-box;
 }
 
-html, body, .wrapper, .content-wrapper {
+html, body, .wrapper {
     background-color: var(--bg-light) !important;
     color: var(--text-main) !important;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
     max-width: 100vw;
     overflow-x: hidden;
+}
+
+.content-wrapper {
+    background: linear-gradient(rgba(249, 250, 251, 0.92), rgba(249, 250, 251, 0.92)),
+                url('/static/images/admin_dash_bg.jpg') center/cover no-repeat fixed !important;
+    color: var(--text-main) !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    min-height: 100vh;
 }
 
 /* Jazzmin Admin Login Page Background */
@@ -38,7 +46,8 @@ html, body, .wrapper, .content-wrapper {
 
 /* Header (Top Navbar) */
 .main-header {
-    background-color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(8px);
     border-bottom: 1px solid #e5e7eb !important;
 }
 
@@ -103,16 +112,17 @@ html, body, .wrapper, .content-wrapper {
 
 /* Cards - Clean Elevated Look */
 .card {
-    background-color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(6px);
     border: 1px solid #e5e7eb !important;
     border-radius: 12px !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06) !important;
     margin-bottom: 20px;
     max-width: 100%;
 }
 
 .card-header {
-    background-color: #ffffff !important;
+    background-color: transparent !important;
     border-bottom: 1px solid #f3f4f6 !important;
     padding: 15px 20px !important;
 }
@@ -190,7 +200,7 @@ html, body, .wrapper, .content-wrapper {
     flex-wrap: wrap !important;
     gap: 10px !important;
     padding: 15px !important;
-    background-color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.95) !important;
     border-radius: 8px !important;
     border: 1px solid #e5e7eb !important;
 }

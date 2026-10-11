@@ -1,13 +1,13 @@
 /* ============================================================
-   JAZZMIN CUSTOM ADMIN THEME - PREMIUM PROFESSIONAL
-   (Modern Slate, Clean White, and Brand Orange)
+   JAZZMIN CUSTOM ADMIN THEME - BRAND ORANGE & CLEAN WHITE
    ============================================================ */
 
 /* Root variables for a balanced professional palette */
 :root {
-    --primary-orange: #f68b1e;      /* Your brand color */
-    --sidebar-dark: #111827;        /* Modern Deep Slate */
-    --bg-light: #f9fafb;            /* Soft Off-White Background */
+    --primary-orange: #f68b1e;      /* Brand Orange */
+    --primary-orange-dark: #d9740c; /* Darker Orange for hover/borders */
+    --sidebar-bg: #f68b1e;          /* Orange Sidebar */
+    --bg-light: #f8fafc;            /* Soft Light Background */
     --text-main: #1f2937;           /* Deep Slate for high legibility */
     --text-muted: #6b7280;          /* Gray for secondary text */
     --sidebar-width: 280px;
@@ -27,8 +27,7 @@ html, body, .wrapper {
 }
 
 .content-wrapper {
-    background: linear-gradient(rgba(249, 250, 251, 0.92), rgba(249, 250, 251, 0.92)),
-                url('/static/images/admin_dash_bg.jpg') center/cover no-repeat fixed !important;
+    background: #ffffff !important;
     color: var(--text-main) !important;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
     min-height: 100vh;
@@ -36,17 +35,19 @@ html, body, .wrapper {
 
 /* Jazzmin Admin Login Page Background */
 .login-page {
-    background: linear-gradient(135deg, rgba(17, 24, 39, 0.82) 0%, rgba(31, 41, 55, 0.88) 100%),
+    background: linear-gradient(135deg, rgba(246, 139, 30, 0.9) 0%, rgba(217, 116, 12, 0.95) 100%),
                 url('/static/images/admin_login_bg.jpg') center/cover no-repeat fixed !important;
 }
 
 .login-box {
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4) !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2) !important;
+    border-radius: 12px !important;
+    overflow: hidden;
 }
 
 /* Header (Top Navbar) */
 .main-header {
-    background-color: rgba(255, 255, 255, 0.95) !important;
+    background-color: #ffffff !important;
     backdrop-filter: blur(8px);
     border-bottom: 1px solid #e5e7eb !important;
 }
@@ -55,18 +56,46 @@ html, body, .wrapper {
     color: var(--text-main) !important;
 }
 
-/* WIDER SIDEBAR - Premium Dark */
-.main-sidebar, .brand-link, .sidebar {
+/* ORANGE SIDEBAR */
+.main-sidebar, .sidebar {
     width: var(--sidebar-width) !important;
-    background-color: var(--sidebar-dark) !important;
+    background-color: var(--sidebar-bg) !important;
     border-right: none !important;
 }
 
-/* Brand Area */
+/* Brand Area - M Logo Replacement */
 .brand-link {
-    border-bottom: 1px solid rgba(255,255,255,0.1) !important;
-    text-align: center;
-    padding: 15px !important;
+    width: var(--sidebar-width) !important;
+    background-color: var(--primary-orange-dark) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+    text-align: left;
+    padding: 12px 18px !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* Hide original logo image */
+.brand-link img, .brand-image, .brand-link .elevation-3 {
+    display: none !important;
+}
+
+/* Insert M Logo */
+.brand-link::before {
+    content: "M";
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background-color: #ffffff;
+    color: var(--primary-orange);
+    font-weight: 900;
+    font-size: 22px;
+    border-radius: 50%;
+    margin-right: 12px;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    flex-shrink: 0;
 }
 
 .brand-text {
@@ -75,54 +104,65 @@ html, body, .wrapper {
     color: #ffffff !important;
 }
 
-/* Navigation Links */
+/* User Panel / Sidebar Text */
+.user-panel, .user-panel a, .user-panel .info {
+    color: #ffffff !important;
+}
+
+/* Navigation Links in Orange Sidebar */
 .nav-sidebar .nav-link {
-    color: #d1d5db !important; /* Light gray for inactive */
+    color: #ffffff !important;
     padding: 12px 20px !important;
     border-radius: 8px !important;
     margin: 4px 12px !important;
     transition: 0.2s ease;
+    font-weight: 500;
 }
 
-.nav-sidebar .nav-link p {
-    color: inherit !important;
-}
-
-/* Active Nav State - Branded Orange */
-.nav-sidebar .nav-item > .nav-link.active {
-    background-color: var(--primary-orange) !important;
+.nav-sidebar .nav-link p, .nav-sidebar .nav-link i {
     color: #ffffff !important;
-    box-shadow: 0 4px 12px rgba(246, 139, 30, 0.3);
+}
+
+/* Active & Hover Nav State in Sidebar */
+.nav-sidebar .nav-item > .nav-link.active {
+    background-color: #ffffff !important;
+    color: var(--primary-orange) !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.nav-sidebar .nav-item > .nav-link.active p,
+.nav-sidebar .nav-item > .nav-link.active i {
+    color: var(--primary-orange) !important;
 }
 
 .nav-sidebar .nav-item:hover > .nav-link:not(.active) {
-    background-color: rgba(255, 255, 255, 0.1) !important;
+    background-color: rgba(255, 255, 255, 0.2) !important;
     color: #ffffff !important;
 }
 
 /* Section Headers in Sidebar */
 .nav-header {
-    color: var(--text-muted) !important;
+    color: rgba(255, 255, 255, 0.85) !important;
     font-size: 11px !important;
-    font-weight: 700 !important;
+    font-weight: 800 !important;
     text-transform: uppercase;
     letter-spacing: 1px;
     padding: 20px 25px 10px !important;
 }
 
-/* Cards - Clean Elevated Look */
-.card {
-    background-color: rgba(255, 255, 255, 0.95) !important;
-    backdrop-filter: blur(6px);
+/* Main Content & Section Cards with White Background */
+.card, .content, #content-main, .module {
+    background-color: #ffffff !important;
     border: 1px solid #e5e7eb !important;
     border-radius: 12px !important;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.06) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
     margin-bottom: 20px;
     max-width: 100%;
 }
 
 .card-header {
-    background-color: transparent !important;
+    background-color: #ffffff !important;
     border-bottom: 1px solid #f3f4f6 !important;
     padding: 15px 20px !important;
 }
@@ -133,15 +173,21 @@ html, body, .wrapper {
     font-size: 16px !important;
 }
 
-/* Form Controls & Changeform Responsiveness */
-.form-control, textarea, select, input[type="text"], input[type="password"], input[type="email"], input[type="number"] {
+/* Form Controls & Description Textarea Styling */
+.form-control, textarea, select, input[type="text"], input[type="password"], input[type="email"], input[type="number"], input[type="url"], input[type="file"] {
     background-color: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 6px !important;
-    padding: 8px 12px !important;
+    border: 2px solid var(--primary-orange) !important;
+    border-radius: 8px !important;
+    padding: 10px 14px !important;
     color: var(--text-main) !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
+}
+
+/* Specifically style description field / textarea and picture containers with orange border */
+textarea, #id_description, .field-description, .form-group textarea, img.file-upload-image, .image-preview {
+    border: 2px solid var(--primary-orange) !important;
+    border-radius: 8px !important;
 }
 
 .form-group, .field-box, .col-12, .col-md-6, .col-md-12 {
@@ -149,19 +195,23 @@ html, body, .wrapper {
 }
 
 .form-control:focus, textarea:focus, select:focus {
-    border-color: var(--primary-orange) !important;
-    box-shadow: 0 0 0 3px rgba(246, 139, 30, 0.1) !important;
+    border-color: var(--primary-orange-dark) !important;
+    box-shadow: 0 0 0 3px rgba(246, 139, 30, 0.25) !important;
+    outline: none !important;
 }
 
-/* Tables - High Legibility */
-.table-responsive {
+/* Tables & Change List - White Background */
+.table-responsive, .results {
     width: 100% !important;
     overflow-x: auto !important;
+    background-color: #ffffff !important;
+    border-radius: 8px !important;
 }
 
 .table {
     color: var(--text-main) !important;
     width: 100% !important;
+    background-color: #ffffff !important;
 }
 
 .table thead th {
@@ -177,30 +227,66 @@ html, body, .wrapper {
 .table td {
     border-top: 1px solid #f3f4f6 !important;
     vertical-align: middle !important;
+    background-color: #ffffff !important;
 }
 
-/* Buttons & Submit Row */
-.btn-primary, .btn-success, input[type="submit"].default, .submit-row input[type="submit"] {
+/* All Buttons with Border & Orange Styling */
+.btn,
+button,
+input[type="submit"],
+input[type="button"],
+input[type="reset"],
+.addlink,
+.changelink,
+.btn-primary,
+.btn-secondary,
+.btn-success,
+.btn-info,
+.btn-warning,
+.btn-danger,
+.btn-default,
+.submit-row input,
+.submit-row a,
+.submit-row button {
     background-color: var(--primary-orange) !important;
-    border: none !important;
+    border: 2px solid var(--primary-orange-dark) !important;
     color: #ffffff !important;
     font-weight: 600 !important;
-    padding: 10px 20px !important;
+    padding: 8px 18px !important;
     border-radius: 6px !important;
-    transition: 0.2s;
+    transition: all 0.2s ease-in-out !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08) !important;
 }
 
-.btn-primary:hover, input[type="submit"].default:hover {
-    background-color: #e07b14 !important;
+/* Add and Change Buttons specifically in list/table */
+a.addlink, a.changelink, .btn-info, .btn-success, .btn-primary {
+    background-color: var(--primary-orange) !important;
+    border: 2px solid var(--primary-orange-dark) !important;
+    color: #ffffff !important;
+}
+
+.btn:hover,
+button:hover,
+input[type="submit"]:hover,
+.addlink:hover,
+.changelink:hover,
+.btn-primary:hover,
+.btn-info:hover,
+.btn-success:hover {
+    background-color: var(--primary-orange-dark) !important;
+    border-color: #b55e05 !important;
+    color: #ffffff !important;
     transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
 }
 
+/* Submit Row */
 .submit-row {
     display: flex !important;
     flex-wrap: wrap !important;
     gap: 10px !important;
     padding: 15px !important;
-    background-color: rgba(255, 255, 255, 0.95) !important;
+    background-color: #ffffff !important;
     border-radius: 8px !important;
     border: 1px solid #e5e7eb !important;
 }

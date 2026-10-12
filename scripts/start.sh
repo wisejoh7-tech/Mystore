@@ -13,7 +13,17 @@ python manage.py migrate --noinput
 echo "Collecting Static Files..."
 python manage.py collectstatic --noinput
 
-# 3. Start Gunicorn
+# 3. Auto-Create/Ensure Superuser (if ADMIN_USERNAME and ADMIN_PASSWORD env vars are set)
+if [ -n "$ADMIN_USERNAME" ] && [ -n "$ADMIN_PASSWORD" ]; then
+    echo "Auto-creating/updating admin account '$ADMIN_USERNAME'..."
+    if [ -n "$ADMIN_EMAIL" ]; then
+        python manage.py reset_admin_password --username "$ADMIN_USERNAME" --password "$ADMIN_PASSWORD" --email "$ADMIN_EMAIL"
+    else
+        python manage.py reset_admin_password --username "$ADMIN_USERNAME" --password "$ADMIN_PASSWORD"
+    fi
+fi
+
+# 4. Start Gunicorn
 echo "Starting Gunicorn with Uvicorn Workers on port ${PORT:-8000}..."
 # Use gunicorn for production as it's more robust than running uvicorn directly
 # -k uvicorn.workers.UvicornWorker allows it to handle ASGI (Channels)

@@ -1071,8 +1071,9 @@ def verify_payment(request):
             # Reduce Stock
             decrement_stock(order.items_json)
 
-            # Send HTML Receipt
-            from .tasks import send_order_receipt_email
+            # Send Order Notifications (Admin & Customer) & HTML Receipt
+            from .tasks import send_order_notification, send_order_receipt_email
+            send_order_notification.delay(order.id, order.total, "Paystack Reference: " + str(reference))
             send_order_receipt_email.delay(order.id)
 
             # Notify Admin Real-time

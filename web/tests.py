@@ -221,6 +221,80 @@ class EmailOrUsernameAuthTests(TestCase):
         self.assertTrue(self.superuser.is_superuser)
 
 
+class EmailNotificationTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username="buyer",
+            email="buyer@example.com",
+            password="Password123!"
+        )
+
+    def test_registration_emails_sent(self):
+        from django.core import mail
+        from web.tasks import send_registration_email, send_otp_email
+
+        mail.outbox = []
+        send_otp_email("newuser@example.com", "123456")
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("123456", mail.outbox[0].body)
+        self.assertEqual(mail.outbox[0].to, ["newuser@example.com"])
+
+        mail.outbox = []
+        send_registration_email("newuser@example.com", "newuser")
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("Welcome to MyStore", mail.outbox[0].subject)
+        self.assertEqual(mail.outbox[0].to, ["newuser@example.com"])
+
+    def test_order_creation_emails_sent(self):
+        from django.core import mail
+        from web.tasks import send_order_notification, send_order_receipt_email
+
+        cart_items = [
+            {'shoeId': 1, 'shoeName': 'Test Shoe', 'shoePrice': 10000, 'quantity': 1}
+        ]
+        order = Order.objects.create(
+            user=self.user,
+            items_json=json.dumps(cart_items),
+            total=10000,
+            status="Pending",
+            payment_method="Bank Transfer"
+        )
+
+        mail.outbox = []
+        send_order_notification(order.id, order.total, "1234567890")
+        # Should send 2 emails: 1 to admin, 1 to customer
+        self.assertEqual(len(mail.outbox), 2)
+        recipients = [m.to[0] for m in mail.outbox]
+        self.assertIn("buyer@example.com", recipients)
+
+        mail.outbox = []
+        send_order_receipt_email(order.id)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("Order Confirmation", mail.outbox[0].subject)
+        self.assertEqual(mail.outbox[0].to, ["buyer@example.com"])
+
+    def test_submit_order_triggers_email_tasks(self):
+        from django.core import mail
+
+        self.client.login(username="buyer", password="Password123!")
+        cart_items = json.dumps([{'shoePrice': 5000, 'quantity': 2}])
+
+        mail.outbox = []
+        response = self.client.post(reverse('submit_order'), {
+            'delivery_address': '123 Main St',
+            'phone': '08012345678',
+            'payment_method': 'Bank Transfer',
+            'confirmed_account_number': '1234567890',
+            'cart_json': cart_items
+        })
+        self.assertEqual(response.status_code, 302)
+
+        # Because CELERY_TASK_ALWAYS_EAGER = True, tasks execute synchronously and populate mail.outbox
+        # 2 from send_order_notification + 1 from send_order_receipt_email = 3 emails total
+        self.assertEqual(len(mail.outbox), 3)
+
+
 class MiddlewareTests(TestCase):
     @override_settings(DEBUG=True)
     def test_async_whitenoise_file_response(self):

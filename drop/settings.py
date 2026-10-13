@@ -410,6 +410,9 @@ EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True" if EMAIL_PORT == 587 else "Fal
 EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "True" if EMAIL_PORT == 465 else "False") == "True"
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "resend" if RESEND_API_KEY else "")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", RESEND_API_KEY)
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "onboarding@resend.dev" if RESEND_API_KEY else "noreply@mystore.com")
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", DEFAULT_FROM_EMAIL)
+
 # -------------------------------------------------
 # CELERY SETTINGS
 # -------------------------------------------------
@@ -421,8 +424,6 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_ALWAYS_EAGER = True
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
-ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", DEFAULT_FROM_EMAIL)
 
 # -------------------------------------------------
 # CLOUDINARY SETTINGS

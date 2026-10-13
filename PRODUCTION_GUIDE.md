@@ -43,7 +43,32 @@ Once Render says "Live", you must perform these steps:
 
 ---
 
-## 4. Scaling for the Future
+## 4. Desktop & Mobile Packaging & Distribution
+
+### Electron Desktop Distribution
+1. Build installers for macOS (DMG, ZIP), Windows (NSIS, Portable), and Linux (AppImage, DEB):
+   ```bash
+   npm run electron:build
+   ```
+2. Distributable packages will be generated in the `dist/` directory.
+
+### Capacitor Mobile App Deployment
+1. Sync web bundle with Capacitor:
+   ```bash
+   npm run cap:sync
+   ```
+2. Build Android release APK/AAB via Android Studio or command line:
+   ```bash
+   npm run cap:open:android
+   ```
+3. Build iOS app bundle via Xcode:
+   ```bash
+   npm run cap:open:ios
+   ```
+
+---
+
+## 5. Scaling for the Future
 - **Domain**: Add a custom domain in Render Settings (e.g., `www.mystore.com`).
 - **Plan Upgrade**: The "Free" database on Render expires after 90 days. Upgrade to the **Starter ($7/mo)** plan before then to keep your data permanently.
 

@@ -1,0 +1,68 @@
+{
+  "name": "mystore-desktop-mobile",
+  "version": "1.0.0",
+  "description": "Desktop and Mobile applications for MyStore e-commerce platform",
+  "main": "electron/main.js",
+  "author": "MyStore Team",
+  "license": "MIT",
+  "scripts": {
+    "electron:start": "electron .",
+    "electron:dev": "electron .",
+    "electron:build": "electron-builder --mac --win --linux",
+    "electron:pack": "electron-builder --dir",
+    "electron:build:mac": "electron-builder --mac",
+    "electron:build:win": "electron-builder --win",
+    "electron:build:linux": "electron-builder --linux",
+    "cap:init": "cap init",
+    "cap:sync": "cap sync",
+    "cap:copy": "cap copy",
+    "cap:add:android": "cap add android",
+    "cap:add:ios": "cap add ios",
+    "cap:open:android": "cap open android",
+    "cap:open:ios": "cap open ios",
+    "cap:build:android": "cap run android",
+    "cap:build:ios": "cap run ios"
+  },
+  "build": {
+    "appId": "com.mystore.app",
+    "productName": "MyStore",
+    "copyright": "Copyright © 2026 MyStore",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/**/*",
+      "static/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.shopping",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "linux": {
+      "category": "Utility",
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    }
+  },
+  "dependencies": {
+    "@capacitor/android": "^5.7.0",
+    "@capacitor/cli": "^5.7.0",
+    "@capacitor/core": "^5.7.0",
+    "@capacitor/ios": "^5.7.0"
+  },
+  "devDependencies": {
+    "electron": "^29.1.0",
+    "electron-builder": "^24.13.3"
+  }
+}

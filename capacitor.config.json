@@ -1,0 +1,17 @@
+{
+  "appId": "com.mystore.app",
+  "appName": "MyStore",
+  "webDir": "static",
+  "bundledWebRuntime": false,
+  "server": {
+    "url": "http://localhost:8000",
+    "cleartext": true
+  },
+  "android": {
+    "allowMixedContent": true,
+    "captureInput": true
+  },
+  "ios": {
+    "allowsLinkPreview": false
+  }
+}

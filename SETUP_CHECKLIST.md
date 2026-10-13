@@ -67,15 +67,29 @@ To access the `/admin/` and `/admin-dashboard/` areas:
 docker-compose exec web python manage.py createsuperuser
 ```
 
-## 5. Key Features Implemented
+## 5. Desktop & Mobile Applications
+
+### Desktop Application (Electron)
+- **Start Development Mode**: `npm run electron:start`
+- **Package for macOS, Windows, Linux**: `npm run electron:build`
+- **Pack Directory**: `npm run electron:pack`
+
+### Mobile Application (Capacitor)
+- **Sync Native Assets**: `npm run cap:sync`
+- **Open Native Android Project**: `npm run cap:open:android`
+- **Open Native iOS Project**: `npm run cap:open:ios`
+- **Run on Android Device/Emulator**: `npm run cap:build:android`
+- **Run on iOS Simulator/Device**: `npm run cap:build:ios`
+
+## 6. Key Features Implemented
 - **Payment**: Paystack Inline Popup with automated status verification.
 - **Invoices**: Branded HTML receipts (email) and PDF downloads.
 - **Search**: AJAX-powered Live Search dropdown.
 - **Dashboard**: Real-time sales charts and low-stock alerts.
-- **Mobile**: Slide-in navigation drawer and horizontal scroll grids.
+- **Mobile & Desktop**: Slide-in navigation drawer, Capacitor native Android/iOS builds, and Electron multi-platform desktop distribution.
 - **Reliability**: Cloudinary image hosting and Redis-backed cache.
 
-## 6. Production Notes
+## 7. Production Notes
 - Set `DEBUG=False` in your `.env`.
 - Ensure your `ALLOWED_HOSTS` includes your actual domain.
 - Configure your Paystack Webhook URL to: `https://yourdomain.com/payment/verify/`.

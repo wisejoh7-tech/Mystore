@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Banking & Finance | MyStore Management{% endblock %}
+
+{% block content %}
+<style>
+    .banking-wrapper { max-width: 1200px; margin: 30px auto; padding: 0 15px; }
+    .banking-subnav { display: flex; gap: 15px; background: #fff; padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 25px; flex-wrap: wrap; }
+    .banking-subnav a { text-decoration: none; color: #555; font-weight: 600; padding: 8px 16px; border-radius: 6px; transition: all 0.2s; }
+    .banking-subnav a:hover, .banking-subnav a.active { background: #673AB7; color: #fff; }
+    .card-box { background: #fff; padding: 25px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 25px; }
+    .btn-banking { background: #673AB7; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-block; }
+    .btn-banking:hover { background: #512DA8; }
+    .btn-outline { border: 1px solid #673AB7; color: #673AB7; background: transparent; }
+    .btn-outline:hover { background: #673AB7; color: #fff; }
+    .table-banking { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    .table-banking th, .table-banking td { padding: 12px 15px; border-bottom: 1px solid #eee; text-align: left; }
+    .table-banking th { background: #f8f9fa; color: #333; font-weight: 600; }
+    .badge-status { padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; display: inline-block; }
+    .badge-completed { background: #e8f5e9; color: #2e7d32; }
+    .badge-pending { background: #fff3e0; color: #ef6c00; }
+    .badge-reconciled { background: #e3f2fd; color: #1565c0; }
+</style>
+
+<div class="banking-wrapper">
+    <h2>🏦 Banking & Financial Management</h2>
+    <div class="banking-subnav">
+        <a href="{% url 'banking_dashboard' %}" class="{% if request.resolver_match.url_name == 'banking_dashboard' %}active{% endif %}">Dashboard</a>
+        <a href="{% url 'bank_accounts' %}" class="{% if request.resolver_match.url_name == 'bank_accounts' %}active{% endif %}">Bank Accounts</a>
+        <a href="{% url 'import_statement' %}" class="{% if request.resolver_match.url_name == 'import_statement' %}active{% endif %}">Import Statement</a>
+        <a href="{% url 'bank_reconciliation' %}" class="{% if request.resolver_match.url_name == 'bank_reconciliation' %}active{% endif %}">Reconciliation</a>
+    </div>
+
+    {% block banking_content %}{% endblock %}
+</div>
+{% endblock %}

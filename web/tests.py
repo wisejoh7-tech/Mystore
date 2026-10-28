@@ -7,15 +7,8 @@ from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.conf import settings
-from django.utils import timezone
-from .models import (
-    User, Category, shoe, watch, Cart, CartItem, Order, ContactMessage, Product,
-    BankAccount, BankTransaction, BankReconciliation, BankingAuditLog
-)
-from .services import (
-    CartService, InventoryService, OrderService, PaymentService,
-    BankAccountService, BankStatementImportService, ReconciliationService, BankingAuditService
-)
+from .models import User, Category, shoe, watch, Cart, CartItem, Order, ContactMessage, Product
+from .services import CartService, InventoryService, OrderService, PaymentService
 
 
 def create_test_image():
@@ -214,86 +207,6 @@ class PaystackWebhookTests(TestCase):
         self.assertEqual(response_dup.status_code, 200)
         self.shoe_item.refresh_from_db()
         self.assertEqual(self.shoe_item.stock, 9)
-
-
-class BankingModuleTests(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.staff_user = User.objects.create_superuser(username="bankadmin", email="admin@bank.com", password="password123")
-        self.regular_user = User.objects.create_user(username="regularuser", email="user@bank.com", password="password123")
-
-    def test_bank_account_masking_and_creation(self):
-        account = BankAccountService.create_account(
-            user=self.staff_user,
-            bank_name="First Bank",
-            account_name="MyStore Ltd",
-            raw_account_number="0123456789",
-            currency="NGN",
-            opening_balance=1000.00
-        )
-        self.assertEqual(account.masked_account_number, "******6789")
-        self.assertEqual(account.current_balance, 1000.00)
-
-    def test_csv_statement_parsing_sanitization_and_deduplication(self):
-        account = BankAccountService.create_account(
-            user=self.staff_user,
-            bank_name="GTBank",
-            account_name="MyStore Ltd",
-            raw_account_number="9876543210"
-        )
-
-        csv_content = (
-            "date,amount,type,reference,description\n"
-            "2026-03-01,5000.00,Deposit,REF001,=SUM(A1:A10)\n"
-            "2026-03-02,1500.00,Withdrawal,REF002,Office Supplies\n"
-        ).encode('utf-8')
-
-        preview = BankStatementImportService.preview_csv_import(account, csv_content)
-        self.assertEqual(preview['total_rows'], 2)
-        self.assertEqual(preview['duplicate_count'], 0)
-        self.assertEqual(preview['rows'][0]['description'], "'=SUM(A1:A10)")
-
-        imported_count = BankStatementImportService.confirm_csv_import(self.staff_user, account, preview['rows'])
-        self.assertEqual(imported_count, 2)
-        account.refresh_from_db()
-        self.assertEqual(account.current_balance, 3500.00)
-
-        preview_dup = BankStatementImportService.preview_csv_import(account, csv_content)
-        self.assertEqual(preview_dup['duplicate_count'], 2)
-
-    def test_bank_reconciliation_matching_and_undo(self):
-        account = BankAccountService.create_account(self.staff_user, "Access Bank", "MyStore", "1122334455")
-        today_str = timezone.now().strftime('%Y-%m-%d')
-        tx = BankTransaction.objects.create(
-            bank_account=account,
-            transaction_date=today_str,
-            amount=10000.00,
-            transaction_type="Deposit",
-            deduplication_hash="unique_hash_123"
-        )
-        order = Order.objects.create(total=10000.00, complete=True, status="Paid", items_json="[]")
-
-        suggestions = ReconciliationService.suggest_matches(tx)
-        self.assertEqual(suggestions['type'], 'order')
-        self.assertIn(order, suggestions['matches'])
-
-        recon = ReconciliationService.confirm_match(self.staff_user, tx, order=order)
-        self.assertEqual(recon.status, 'Confirmed')
-        tx.refresh_from_db()
-        self.assertEqual(tx.status, 'Reconciled')
-
-        ReconciliationService.undo_match(self.staff_user, tx)
-        tx.refresh_from_db()
-        self.assertEqual(tx.status, 'Completed')
-
-    def test_banking_role_permissions(self):
-        self.client.login(username="regularuser", password="password123")
-        res = self.client.get(reverse('bank_accounts'))
-        self.assertEqual(res.status_code, 403)
-
-        self.client.login(username="bankadmin", password="password123")
-        res_admin = self.client.get(reverse('bank_accounts'))
-        self.assertEqual(res_admin.status_code, 200)
 
 
 @override_settings(

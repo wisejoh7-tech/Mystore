@@ -72,15 +72,6 @@ urlpatterns = [
     path("payment/verify/", views.verify_payment, name="verify_payment"),
     path("payment/webhook/", views.paystack_webhook, name="paystack_webhook"),
 
-    # Banking & Financial Management Module
-    path("banking/accounts/", views.bank_accounts_list, name="bank_accounts"),
-    path("banking/import/", views.import_bank_statement, name="import_statement"),
-    path("banking/import/confirm/", views.confirm_statement_import, name="confirm_statement_import"),
-    path("banking/reconciliation/", views.bank_reconciliation_view, name="bank_reconciliation"),
-    path("banking/reconciliation/confirm/", views.confirm_reconciliation, name="confirm_reconciliation"),
-    path("banking/reconciliation/undo/", views.undo_reconciliation, name="undo_reconciliation"),
-    path("banking/dashboard/", views.banking_dashboard_view, name="banking_dashboard"),
-
     path("admin-dashboard/", views.admin_dashboard, name="admin_dashboard"),
     path("admin-register-home/", views.admin_register_home, name="admin_register_home"),
     path(".well-known/appspecific/<str:name>.json", views.handle_chrome_devtools, name="chrome_devtools"),

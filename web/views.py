@@ -832,6 +832,18 @@ def handle_chrome_devtools(request, name):
     return JsonResponse({}, status=404)
 
 
+from .banking.views import (  # noqa: E402
+    bank_dashboard,
+    bank_connect_initiate,
+    bank_connect_confirm,
+    bank_disconnect,
+    bank_sync_transactions,
+    bank_import_statement,
+    bank_manual_reconcile,
+    bank_webhook_handler,
+)
+
+
 @login_required
 def clear_order_history(request):
     if request.method == "POST":

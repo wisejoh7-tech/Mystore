@@ -258,3 +258,14 @@ class ContactMessage(models.Model):
 
     def __str__(self):
         return f"Message from {self.name} - {self.subject}"
+
+
+from .banking.models import (  # noqa: E402
+    BankAccountConnection,
+    BankAccount,
+    BankTransaction,
+    BankStatement,
+    BankCharge,
+    ReconciliationRecord,
+    BankingAuditLog,
+)

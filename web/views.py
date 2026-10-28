@@ -1,6 +1,5 @@
 import random
 import logging
-import requests
 import json
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
@@ -14,12 +13,15 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Q, Avg, Sum, F
 from django.http import JsonResponse, HttpResponse
 from django.template.loader import get_template
+from django.views.decorators.csrf import csrf_exempt
+from django.core.paginator import Paginator
 from datetime import timedelta
 from xhtml2pdf import pisa
 import io
 from .models import User, OTP, shoe, watch, Category, Cart, CartItem, Order, Wishlist, Review, Expense, ContactMessage, Product
 from .forms import RegistrationForm, LoginForm, PhoneLoginForm, ProfileUpdateForm, ContactForm
 from .tasks import send_otp_email, send_registration_email, send_sms_otp, send_contact_email
+from .services import CartService, InventoryService, OrderService, PaymentService
 
 logger = logging.getLogger(__name__)
 
@@ -28,51 +30,19 @@ def generate_otp():
     return str(random.randint(100000, 999999))
 
 
-def decrement_stock(items_json):
-    """Helper to decrement stock and trigger alerts if low"""
-    from .tasks import send_low_stock_alert
-    try:
-        items = json.loads(items_json)
-        for item in items:
-            qty = int(item.get('quantity', 1))
-            product = None
-            ptype = ""
-
-            if 'shoeId' in item:
-                product = shoe.objects.filter(id=item['shoeId']).first()
-                ptype = "shoe"
-            elif 'watchId' in item:
-                product = watch.objects.filter(id=item['watchId']).first()
-                ptype = "watch"
-            elif 'productId' in item:
-                product = Product.objects.filter(id=item['productId']).first()
-                ptype = "product"
-
-            if product:
-                product.stock = F('stock') - qty
-                product.save()
-                product.refresh_from_db()
-
-                # Check for low stock alert
-                if product.stock <= 5:
-                    send_low_stock_alert.delay(ptype, product.id, product.stock)
-    except Exception as e:
-        logger.error(f"Error reducing stock: {e}")
-
-
 def base(request):
     categories = Category.objects.all()
-    featured_shoes = shoe.objects.all()[:8]
-    featured_watches = watch.objects.all()[:8]
-    flash_shoes = shoe.objects.filter(discount_price__isnull=False)[:8]
-    top_watches = watch.objects.all()[:8]
-    men_shoes = shoe.objects.filter(target_audience='Male')[:8]
-    women_shoes = shoe.objects.filter(target_audience='Female')[:8]
+    featured_shoes = shoe.objects.select_related('category').all()[:8]
+    featured_watches = watch.objects.select_related('category').all()[:8]
+    flash_shoes = shoe.objects.select_related('category').filter(discount_price__isnull=False)[:8]
+    top_watches = watch.objects.select_related('category').all()[:8]
+    men_shoes = shoe.objects.select_related('category').filter(target_audience='Male')[:8]
+    women_shoes = shoe.objects.select_related('category').filter(target_audience='Female')[:8]
 
     # New Categories
-    appliances = Product.objects.filter(category__name='Home Appliances')[:8]
-    accessories = Product.objects.filter(category__name='Computer Accessories')[:8]
-    phones = Product.objects.filter(category__name='Phones')[:8]
+    appliances = Product.objects.select_related('category').filter(category__name='Home Appliances')[:8]
+    accessories = Product.objects.select_related('category').filter(category__name='Computer Accessories')[:8]
+    phones = Product.objects.select_related('category').filter(category__name='Phones')[:8]
 
     # Fetch Recently Viewed Items
     recently_viewed_ids = request.session.get('recently_viewed', [])
@@ -81,11 +51,11 @@ def base(request):
         try:
             ptype, pk = item_id.split('_')
             if ptype == 'shoe':
-                recently_viewed_items.append({'type': 'shoe', 'item': shoe.objects.get(pk=pk)})
+                recently_viewed_items.append({'type': 'shoe', 'item': shoe.objects.select_related('category').get(pk=pk)})
             elif ptype == 'watch':
-                recently_viewed_items.append({'type': 'watch', 'item': watch.objects.get(pk=pk)})
+                recently_viewed_items.append({'type': 'watch', 'item': watch.objects.select_related('category').get(pk=pk)})
             else:
-                recently_viewed_items.append({'type': 'product', 'item': Product.objects.get(pk=pk)})
+                recently_viewed_items.append({'type': 'product', 'item': Product.objects.select_related('category').get(pk=pk)})
         except Exception:
             continue
 
@@ -101,33 +71,21 @@ def base(request):
         'accessories': accessories,
         'phones': phones,
         'recently_viewed': recently_viewed_items,
-        'free_shipping_threshold': 50000,  # Example threshold in Naira
-        'flash_sale_end': (timezone.now() + timedelta(days=2)).isoformat(),  # 2 days from now
+        'free_shipping_threshold': 50000,
+        'flash_sale_end': (timezone.now() + timedelta(days=2)).isoformat(),
     }
 
-    # Add admin metrics if staff
     if request.user.is_authenticated and request.user.is_staff:
-        # 1. Inventory Value (Selling)
         shoe_val = shoe.objects.aggregate(total=Sum(F('price') * F('stock')))['total'] or 0
         watch_val = watch.objects.aggregate(total=Sum(F('price') * F('stock')))['total'] or 0
         context['admin_total_goods_value'] = shoe_val + watch_val
-
-        # 2. Total Collected (Revenue)
         context['admin_total_revenue'] = Order.objects.filter(complete=True).exclude(status='Cancelled').aggregate(revenue=Sum('total'))['revenue'] or 0
-
-        # 3. Total Expenses
         total_exp = Expense.objects.aggregate(expenses=Sum('amount'))['expenses'] or 0
         context['admin_total_expenses'] = total_exp
-
-        # 4. Net Finance
         context['admin_net_finance'] = context['admin_total_revenue'] - total_exp
-
-        # 5. Total Units in Stock
         shoe_units = shoe.objects.aggregate(total=Sum('stock'))['total'] or 0
         watch_units = watch.objects.aggregate(total=Sum('stock'))['total'] or 0
         context['admin_total_units'] = shoe_units + watch_units
-
-        # 6. Admin Reg Form
         context['admin_reg_form'] = RegistrationForm()
 
     return render(request, 'base_home.html', context)
@@ -139,14 +97,12 @@ def register(request):
         if form.is_valid():
             user = form.save(commit=False)
             user.set_password(form.cleaned_data["password"])
-            user.is_active = False  # Deactivate until OTP is verified
+            user.is_active = False
             user.save()
 
-            # Generate OTP
             code = generate_otp()
             OTP.objects.update_or_create(user=user, defaults={'code': code, 'created_at': timezone.now()})
 
-            # Send OTP to both Email and Phone
             send_otp_email.delay(user.email, code)
             if user.phone:
                 send_sms_otp.delay(user.phone, code)
@@ -169,7 +125,7 @@ def admin_register_home(request):
             user = form.save(commit=False)
             user.set_password(form.cleaned_data["password"])
             user.is_staff = True
-            user.is_active = True  # Active immediately for admin-created accounts
+            user.is_active = True
             user.save()
             messages.success(request, f"Admin account '{user.username}' created successfully!")
         else:
@@ -190,7 +146,6 @@ def verify_code(request):
             user = User.objects.get(id=user_id)
             otp = OTP.objects.get(user=user, code=code)
 
-            # Check expiration (e.g., 5 minutes)
             if (timezone.now() - otp.created_at).total_seconds() > 300:
                 messages.error(request, "Code expired. Please register again.")
                 return redirect("register")
@@ -237,20 +192,14 @@ def login_with_phone(request):
                 user = User.objects.get(phone=phone)
                 code = generate_otp()
                 OTP.objects.update_or_create(user=user, defaults={'code': code, 'created_at': timezone.now()})
-                print(f"DEBUG: Phone OTP for {phone} is {code}")
 
-                # Send fallback email if user has one
                 if user.email:
                     send_otp_email.delay(user.email, code)
                     messages.success(request, "A login code has been sent to your registered email.")
 
-                # Send SMS OTP if user has a phone
                 if user.phone:
-                    from .tasks import send_sms_otp
                     send_sms_otp.delay(user.phone, code)
                     messages.success(request, f"A login code has been sent to your phone number: {user.phone}")
-
-                messages.info(request, f"Development Tip: Your OTP code is {code}")
 
                 request.session['phone_login_user_id'] = user.id
                 return redirect("verify_phone_login")
@@ -291,7 +240,6 @@ def logout_view(request):
 
 
 def admin_login(request):
-    """Admin-only login view"""
     if request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser):
         return redirect("admin_dashboard")
 
@@ -317,7 +265,6 @@ def admin_login(request):
 
 
 def admin_register(request):
-    """Admin registration page - requires existing admin approval"""
     if not request.user.is_authenticated or not request.user.is_staff:
         messages.error(request, "Admin registration requires staff approval. Contact an administrator.")
         return redirect("home")
@@ -349,7 +296,7 @@ def men(request):
     max_price = request.GET.get('max_price', '')
     brand_filter = request.GET.get('brand', '')
 
-    shoes = shoe.objects.filter(target_audience='Male')
+    shoes = shoe.objects.select_related('category').filter(target_audience='Male')
 
     if category_filter:
         shoes = shoes.filter(category__name=category_filter)
@@ -365,8 +312,13 @@ def men(request):
     brands = shoe.objects.filter(target_audience='Male').values_list('brand', flat=True).distinct()
     categories = Category.objects.filter(shoes__target_audience='Male').distinct()
 
+    paginator = Paginator(shoes, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        'shoes': shoes,
+        'shoes': page_obj,
+        'page_obj': page_obj,
         'brands': brands,
         'categories': categories,
         'selected_category': category_filter,
@@ -384,7 +336,7 @@ def women(request):
     max_price = request.GET.get('max_price', '')
     brand_filter = request.GET.get('brand', '')
 
-    shoes = shoe.objects.filter(target_audience='Female')
+    shoes = shoe.objects.select_related('category').filter(target_audience='Female')
 
     if category_filter:
         shoes = shoes.filter(category__name=category_filter)
@@ -400,8 +352,13 @@ def women(request):
     brands = shoe.objects.filter(target_audience='Female').values_list('brand', flat=True).distinct()
     categories = Category.objects.filter(shoes__target_audience='Female').distinct()
 
+    paginator = Paginator(shoes, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        'shoes': shoes,
+        'shoes': page_obj,
+        'page_obj': page_obj,
         'brands': brands,
         'categories': categories,
         'selected_category': category_filter,
@@ -413,18 +370,18 @@ def women(request):
 
 
 def wrist(request):
-    watches = watch.objects.all()
-    return render(request, 'wristcollection.html', {'watches': watches})
+    watches = watch.objects.select_related('category').all()
+    paginator = Paginator(watches, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'wristcollection.html', {'watches': page_obj, 'page_obj': page_obj})
 
 
 def category_view(request, category_name):
-    # Standardize name (e.g., 'home-appliances' -> 'Home Appliances')
     clean_name = category_name.replace('-', ' ').title()
-    products = Product.objects.filter(category__name__iexact=clean_name)
-
-    # Also search in shoes/watches just in case
-    shoes = shoe.objects.filter(category__name__iexact=clean_name)
-    watches = watch.objects.filter(category__name__iexact=clean_name)
+    products = Product.objects.select_related('category').filter(category__name__iexact=clean_name)
+    shoes = shoe.objects.select_related('category').filter(category__name__iexact=clean_name)
+    watches = watch.objects.select_related('category').filter(category__name__iexact=clean_name)
 
     return render(request, 'category_detail.html', {
         'category_name': clean_name,
@@ -436,11 +393,7 @@ def category_view(request, category_name):
 
 @login_required
 def orders_view(request):
-    if request.user.is_authenticated:
-        orders = Order.objects.filter(user=request.user).order_by('-created_at')
-    else:
-        orders = []
-
+    orders = Order.objects.filter(user=request.user).select_related('user').order_by('-created_at') if request.user.is_authenticated else []
     clear_cart = request.session.pop('clear_local_cart', False)
     return render(request, 'order.html', {
         'orders': orders,
@@ -449,8 +402,11 @@ def orders_view(request):
 
 
 def collection(request):
-    shoes = shoe.objects.filter(target_audience='Collections')
-    return render(request, 'collection.html', {'shoes': shoes})
+    shoes = shoe.objects.select_related('category').filter(target_audience='Collections')
+    paginator = Paginator(shoes, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'collection.html', {'shoes': page_obj, 'page_obj': page_obj})
 
 
 def all_categories(request):
@@ -460,30 +416,27 @@ def all_categories(request):
 
 def product_detail(request, prod_type, pk):
     if prod_type == 'shoe':
-        product = get_object_or_404(shoe, pk=pk)
+        product = get_object_or_404(shoe.objects.select_related('category'), pk=pk)
     elif prod_type == 'watch':
-        product = get_object_or_404(watch, pk=pk)
+        product = get_object_or_404(watch.objects.select_related('category'), pk=pk)
     else:
-        product = get_object_or_404(Product, pk=pk)
+        product = get_object_or_404(Product.objects.select_related('category'), pk=pk)
 
-    # Recently Viewed Logic
     recently_viewed = request.session.get('recently_viewed', [])
     item_id = f"{prod_type}_{pk}"
     if item_id in recently_viewed:
         recently_viewed.remove(item_id)
     recently_viewed.insert(0, item_id)
-    request.session['recently_viewed'] = recently_viewed[:6]  # Keep last 6
+    request.session['recently_viewed'] = recently_viewed[:6]
 
-    reviews = product.reviews.all().order_by('-created_at')
+    reviews = product.reviews.select_related('user').all().order_by('-created_at')
     average_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
 
-    # Related Products Logic
     if prod_type == 'shoe':
-        related_products = shoe.objects.filter(category=product.category).exclude(pk=product.pk)[:4]
+        related_products = shoe.objects.select_related('category').filter(category=product.category).exclude(pk=product.pk)[:4]
     else:
-        related_products = watch.objects.filter(category=product.category).exclude(pk=product.pk)[:4]
+        related_products = watch.objects.select_related('category').filter(category=product.category).exclude(pk=product.pk)[:4]
 
-    # Wishlist Logic
     in_wishlist = False
     if request.user.is_authenticated:
         wishlist, _ = Wishlist.objects.get_or_create(user=request.user)
@@ -509,8 +462,8 @@ def search(request):
     query = request.GET.get('q', '')
     category_name = request.GET.get('category', '')
 
-    shoes = shoe.objects.all()
-    watches = watch.objects.all()
+    shoes = shoe.objects.select_related('category').all()
+    watches = watch.objects.select_related('category').all()
 
     if query:
         shoes = shoes.filter(Q(name__icontains=query) | Q(brand__icontains=query))
@@ -559,7 +512,7 @@ def live_search(request):
 
 @login_required
 def dashboard(request):
-    orders = Order.objects.filter(user=request.user)
+    orders = Order.objects.filter(user=request.user).select_related('user')
     wishlist, _ = Wishlist.objects.get_or_create(user=request.user)
     profile_form = ProfileUpdateForm(instance=request.user)
     return render(request, 'dashboard.html', {
@@ -586,7 +539,7 @@ def update_dashboard_settings(request):
         messages.success(request, 'Your account settings have been updated.')
         return redirect('dashboard')
 
-    orders = Order.objects.filter(user=request.user)
+    orders = Order.objects.filter(user=request.user).select_related('user')
     wishlist, _ = Wishlist.objects.get_or_create(user=request.user)
     return render(request, 'dashboard.html', {
         'orders': orders,
@@ -596,28 +549,16 @@ def update_dashboard_settings(request):
 
 
 def cart_view(request):
-    cart = get_or_create_cart(request)
-    # UX: Suggest some items if cart is empty
+    session_key = request.session.session_key or ""
+    cart = CartService.get_or_create_cart(request.user, session_key)
     upsell_products = []
-    if cart.items.count() == 0:
-        upsell_products = list(shoe.objects.all()[:4])
+    if not cart or cart.items.count() == 0:
+        upsell_products = list(shoe.objects.select_related('category').all()[:4])
 
     return render(request, 'cart.html', {
         'cart': cart,
         'upsell_products': upsell_products
     })
-
-
-def get_or_create_cart(request):
-    if request.user.is_authenticated:
-        cart, _ = Cart.objects.get_or_create(user=request.user)
-    else:
-        session_key = request.session.session_key
-        if not session_key:
-            request.session.create()
-            session_key = request.session.session_key
-        cart, _ = Cart.objects.get_or_create(session_key=session_key)
-    return cart
 
 
 def add_to_cart(request):
@@ -628,22 +569,11 @@ def add_to_cart(request):
             prod_id = data.get('id')
             quantity = int(data.get('quantity', 1))
 
-            cart = get_or_create_cart(request)
-            if prod_type == 'shoe':
-                item = get_object_or_404(shoe, id=prod_id)
-                cart_item, created = CartItem.objects.get_or_create(cart=cart, shoe_item=item)
-            elif prod_type == 'watch':
-                item = get_object_or_404(watch, id=prod_id)
-                cart_item, created = CartItem.objects.get_or_create(cart=cart, watch_item=item)
-            else:
-                item = get_object_or_404(Product, id=prod_id)
-                cart_item, created = CartItem.objects.get_or_create(cart=cart, product_item=item)
+            if not request.session.session_key:
+                request.session.create()
 
-            if not created:
-                cart_item.quantity += quantity
-            else:
-                cart_item.quantity = quantity
-            cart_item.save()
+            cart = CartService.get_or_create_cart(request.user, request.session.session_key)
+            CartService.add_to_cart(cart, prod_type, prod_id, quantity)
 
             return JsonResponse({'status': 'success', 'cart_count': cart.items.count()})
         except Exception as e:
@@ -656,9 +586,11 @@ def remove_from_cart(request):
         try:
             data = json.loads(request.body)
             item_id = data.get('item_id')
-            cart = get_or_create_cart(request)
-            CartItem.objects.filter(cart=cart, id=item_id).delete()
-            return JsonResponse({'status': 'success', 'cart_count': cart.items.count()})
+            session_key = request.session.session_key or ""
+            cart = CartService.get_or_create_cart(request.user, session_key)
+            CartService.remove_from_cart(cart, item_id)
+            cart_count = cart.items.count() if cart else 0
+            return JsonResponse({'status': 'success', 'cart_count': cart_count})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)})
     return JsonResponse({'status': 'error'}, status=400)
@@ -670,36 +602,7 @@ def sync_cart(request):
         try:
             data = json.loads(request.body)
             local_cart = data.get('cart', [])
-            db_cart, _ = Cart.objects.get_or_create(user=request.user)
-
-            for item in local_cart:
-                shoe_id = item.get('shoeId')
-                watch_id = item.get('watchId')
-                quantity = int(item.get('quantity', 1))
-
-                if shoe_id:
-                    try:
-                        prod = shoe.objects.get(id=shoe_id)
-                        cart_item, created = CartItem.objects.get_or_create(cart=db_cart, shoe_item=prod)
-                        if not created:
-                            cart_item.quantity = min(10, cart_item.quantity + quantity)
-                        else:
-                            cart_item.quantity = min(10, quantity)
-                        cart_item.save()
-                    except shoe.DoesNotExist:
-                        continue
-                elif watch_id:
-                    try:
-                        prod = watch.objects.get(id=watch_id)
-                        cart_item, created = CartItem.objects.get_or_create(cart=db_cart, watch_item=prod)
-                        if not created:
-                            cart_item.quantity = min(10, cart_item.quantity + quantity)
-                        else:
-                            cart_item.quantity = min(10, quantity)
-                        cart_item.save()
-                    except watch.DoesNotExist:
-                        continue
-
+            db_cart = CartService.sync_cart(request.user, local_cart)
             return JsonResponse({'status': 'success', 'cart_count': db_cart.items.count()})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)})
@@ -707,25 +610,9 @@ def sync_cart(request):
 
 
 def get_cart_data(request):
-    if request.user.is_authenticated:
-        cart, _ = Cart.objects.get_or_create(user=request.user)
-    else:
-        session_key = request.session.session_key
-        if not session_key:
-            return JsonResponse({'status': 'ok', 'cart': []})
-        cart, _ = Cart.objects.get_or_create(session_key=session_key)
-
-    items = []
-    for item in cart.items.all():
-        prod = item.shoe_item or item.watch_item
-        if prod:
-            items.append({
-                'id': item.id,
-                'name': prod.name,
-                'quantity': item.quantity,
-                'price': float(prod.discount_price or prod.price),
-                'image': prod.image.url if prod.image else ''
-            })
+    session_key = request.session.session_key or ""
+    cart = CartService.get_or_create_cart(request.user, session_key)
+    items = CartService.get_cart_data(cart)
     return JsonResponse({'status': 'ok', 'cart': items})
 
 
@@ -745,79 +632,35 @@ def submit_order(request):
         payment_method = request.POST.get('payment_method', 'Bank Transfer')
         cart_json = request.POST.get('cart_json')
 
-        if not cart_json or cart_json == 'null':
-            messages.error(request, "Your cart data is missing. Please try again.")
-            return redirect('cart')
-
         try:
-            cart_data = json.loads(cart_json)
-            if not cart_data:
-                messages.error(request, "Your cart is empty.")
-                return redirect('cart')
-
-            total_ngn = 0
-            for item in cart_data:
-                price = float(item.get('watchPrice') or item.get('shoePrice') or item.get('price') or 0)
-                qty = int(item.get('quantity') or 1)
-                total_ngn += price * qty
-
-            # Create Order
-            order = Order.objects.create(
+            order = OrderService.create_order(
                 user=request.user,
-                items_json=cart_json,
-                total=total_ngn,
+                cart_json=cart_json,
                 delivery_address=address,
                 phone=phone,
-                status='Pending',
                 payment_method=payment_method,
-                confirmed_account_number=confirmed_acc if payment_method == 'Bank Transfer' else None
+                confirmed_acc=confirmed_acc
             )
 
-            # Clear Database Cart
-            Cart.objects.filter(user=request.user).delete()
-            if not request.user.is_authenticated:
-                session_key = request.session.session_key
-                if session_key:
-                    Cart.objects.filter(session_key=session_key).delete()
-
-            # If AJAX request, return JSON for Inline Payment
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({
                     'status': 'success',
                     'order_id': order.id,
-                    'total': float(total_ngn),
+                    'total': float(order.total),
                     'payment_method': payment_method,
                     'clear_cart': True
                 })
 
-            # If Card Payment selected, redirect to Paystack
             if payment_method == 'Card Payment':
                 return redirect('initiate_payment', order_id=order.id)
 
-            # Trigger Notification for other methods
-            from .tasks import send_order_notification, send_order_receipt_email
-            send_order_notification.delay(order.id, total_ngn, confirmed_acc)
-            send_order_receipt_email.delay(order.id)
-
-            # Real-time Dashboard Notification
-            channel_layer = get_channel_layer()
-            async_to_sync(channel_layer.group_send)(
-                "admin_notifications",
-                {
-                    "type": "send_notification",
-                    "content": {
-                        "title": "New Order Placed",
-                        "message": f"Order #{order.id} for ₦{total_ngn} (Method: {payment_method})",
-                        "url": "/admin-dashboard/"
-                    }
-                }
-            )
-
             messages.success(request, f"Order #{order.id} submitted successfully! Your cart has been cleared.")
-            # Set a session flag to clear local storage cart
             request.session['clear_local_cart'] = True
             return redirect('orders')
 
+        except ValueError as e:
+            messages.error(request, str(e))
+            return redirect('cart')
         except Exception as e:
             messages.error(request, f"Error processing order: {str(e)}")
             return redirect('cart')
@@ -856,13 +699,12 @@ def toggle_wishlist(request):
 def add_review(request):
     if request.method == "POST":
         try:
-            # Handle both Form data and JSON (AJAX)
             if request.content_type == 'application/json':
                 data = json.loads(request.body)
             else:
                 data = request.POST
 
-            prod_type = data.get('type')  # 'shoe' or 'watch'
+            prod_type = data.get('type')
             prod_id = data.get('id')
             rating = int(data.get('rating', 5))
             comment = data.get('comment', '')
@@ -910,10 +752,7 @@ def contact(request):
             subject = form.cleaned_data['subject']
             message = form.cleaned_data['message']
 
-            # Save to DB
             ContactMessage.objects.create(name=name, email=email, subject=subject, message=message)
-
-            # Send Email
             send_contact_email.delay(name, email, subject, message)
 
             messages.success(request, "Your message has been sent successfully. We will get back to you soon!")
@@ -931,7 +770,6 @@ def track_order(request):
 
     if order_id and contact:
         try:
-            # Look for order by ID and either phone or email
             order = Order.objects.filter(id=order_id.replace('ORD-', '')).filter(
                 Q(phone=contact) | Q(user__email=contact)
             ).first()
@@ -991,7 +829,6 @@ def logistics_partner(request):
 
 
 def handle_chrome_devtools(request, name):
-    """Handle Chrome DevTools .well-known requests gracefully"""
     return JsonResponse({}, status=404)
 
 
@@ -1008,12 +845,7 @@ def mark_order_paid(request, order_id):
     if request.method == "POST":
         order = get_object_or_404(Order, id=order_id, user=request.user)
         if order.status == "Processing" or order.status == "Pending":
-            # Reduce Stock when marked as paid
-            decrement_stock(order.items_json)
-
-            order.status = "Delivered"
-            order.complete = True
-            order.save()
+            OrderService.complete_order(order)
             messages.success(request, f"Order #{order_id} marked as paid and completed!")
         else:
             messages.warning(request, "This order cannot be marked as paid.")
@@ -1023,21 +855,13 @@ def mark_order_paid(request, order_id):
 @login_required
 def initiate_payment(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
-    url = "https://api.paystack.co/transaction/initialize"
-    headers = {
-        "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
-        "Content-Type": "application/json",
-    }
-    data = {
-        "email": request.user.email,
-        "amount": int(order.total * 100),  # Paystack expects amount in kobo
-        "callback_url": request.build_absolute_uri('/payment/verify/'),
-        "metadata": {
-            "order_id": order.id
-        }
-    }
-    response = requests.post(url, headers=headers, json=data)
-    res_data = response.json()
+    callback_url = request.build_absolute_uri('/payment/verify/')
+    res_data = PaymentService.initialize_paystack_transaction(
+        user_email=request.user.email,
+        amount=order.total,
+        callback_url=callback_url,
+        order_id=order.id
+    )
     if res_data.get("status"):
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({'status': 'success', 'authorization_url': res_data["data"]["authorization_url"], 'access_code': res_data["data"]["access_code"]})
@@ -1051,45 +875,16 @@ def initiate_payment(request, order_id):
 
 def verify_payment(request):
     reference = request.GET.get('reference')
-    url = f"https://api.paystack.co/transaction/verify/{reference}"
-    headers = {
-        "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
-    }
-    response = requests.get(url, headers=headers)
-    res_data = response.json()
+    if not reference:
+        messages.error(request, "Missing transaction reference.")
+        return redirect('orders')
 
-    if res_data["status"] and res_data["data"]["status"] == "success":
+    res_data = PaymentService.verify_paystack_transaction(reference)
+
+    if res_data.get("status") and res_data.get("data", {}).get("status") == "success":
         order_id = res_data["data"]["metadata"]["order_id"]
         order = get_object_or_404(Order, id=order_id)
-
-        if not order.complete:
-            order.complete = True
-            order.status = "Paid"
-            order.transaction_id = reference
-            order.save()
-
-            # Reduce Stock
-            decrement_stock(order.items_json)
-
-            # Send Order Notifications (Admin & Customer) & HTML Receipt
-            from .tasks import send_order_notification, send_order_receipt_email
-            send_order_notification.delay(order.id, order.total, "Paystack Reference: " + str(reference))
-            send_order_receipt_email.delay(order.id)
-
-            # Notify Admin Real-time
-            channel_layer = get_channel_layer()
-            async_to_sync(channel_layer.group_send)(
-                "admin_notifications",
-                {
-                    "type": "send_notification",
-                    "content": {
-                        "title": "New Payment Received",
-                        "message": f"Order #{order.id} has been paid (₦{order.total})",
-                        "url": "/admin-dashboard/"
-                    }
-                }
-            )
-
+        OrderService.complete_order(order, reference=reference)
         messages.success(request, "Payment successful!")
         return redirect('orders')
     else:
@@ -1097,11 +892,33 @@ def verify_payment(request):
         return redirect('orders')
 
 
+@csrf_exempt
+def paystack_webhook(request):
+    if request.method != "POST":
+        return HttpResponse(status=405)
+
+    signature = request.headers.get('X-Paystack-Signature')
+    payload = request.body
+
+    if not PaymentService.verify_webhook_signature(payload, signature):
+        logger.warning("Invalid Paystack webhook signature")
+        return HttpResponse(status=400)
+
+    try:
+        event_data = json.loads(payload.decode('utf-8'))
+        success, message = PaymentService.process_webhook_event(event_data)
+        if success:
+            return HttpResponse(status=200)
+        return HttpResponse(message, status=400)
+    except Exception as exc:
+        logger.error(f"Error handling Paystack webhook: {exc}")
+        return HttpResponse("Internal Server Error", status=500)
+
+
 @login_required
 def download_invoice(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
 
-    # Standardize items
     items = order.items_list
     for item in items:
         item['price'] = float(item.get('price', 0))
@@ -1143,21 +960,18 @@ def subscribe_newsletter(request):
 def admin_dashboard(request):
     if not request.user.is_staff:
         raise PermissionDenied
-    # Calculations
-    # 1. Total Inventory Selling Value
+
     shoe_inventory_value = shoe.objects.aggregate(total=Sum(F('price') * F('stock')))['total'] or 0
     watch_inventory_value = watch.objects.aggregate(total=Sum(F('price') * F('stock')))['total'] or 0
     product_inventory_value = Product.objects.aggregate(total=Sum(F('price') * F('stock')))['total'] or 0
     total_inventory_value = shoe_inventory_value + watch_inventory_value + product_inventory_value
 
-    # 2. Total Stock Cost
     shoe_stock_cost = shoe.objects.aggregate(total=Sum(F('cost_price') * F('stock')))['total'] or 0
     watch_stock_cost = watch.objects.aggregate(total=Sum(F('cost_price') * F('stock')))['total'] or 0
     product_stock_cost = Product.objects.aggregate(total=Sum(F('cost_price') * F('stock')))['total'] or 0
     total_stock_cost_in_inventory = shoe_stock_cost + watch_stock_cost + product_stock_cost
 
-    # 3. Total Revenue
-    completed_orders = Order.objects.filter(complete=True).exclude(status='Cancelled')
+    completed_orders = Order.objects.filter(complete=True).exclude(status='Cancelled').select_related('user')
     total_revenue = completed_orders.aggregate(total=Sum('total'))['total'] or 0
     total_sales_count = completed_orders.count()
 
@@ -1175,23 +989,18 @@ def admin_dashboard(request):
     out_of_stock_products = Product.objects.filter(stock__lte=0).count()
     out_of_stock_count = out_of_stock_shoes + out_of_stock_watches + out_of_stock_products
 
-    # 4. Total Expenses
     total_expenses = Expense.objects.aggregate(total=Sum('amount'))['total'] or 0
 
-    # 5. Total Units in Stock
     shoe_units = shoe.objects.aggregate(total=Sum('stock'))['total'] or 0
     watch_units = watch.objects.aggregate(total=Sum('stock'))['total'] or 0
     product_units = Product.objects.aggregate(total=Sum('stock'))['total'] or 0
     total_units = shoe_units + watch_units + product_units
 
-    # Summary
     net_profit = total_revenue - total_expenses
 
-    # Low Stock Alerts
-    low_stock_shoes = shoe.objects.filter(stock__gt=0, stock__lte=5)
-    low_stock_watches = watch.objects.filter(stock__gt=0, stock__lte=5)
+    low_stock_shoes = shoe.objects.filter(stock__gt=0, stock__lte=5).select_related('category')
+    low_stock_watches = watch.objects.filter(stock__gt=0, stock__lte=5).select_related('category')
 
-    # Chart Data (last 7 days)
     last_7_days = [(timezone.now() - timedelta(days=i)).date() for i in range(6, -1, -1)]
     revenue_data = []
     expense_data = []
@@ -1203,8 +1012,7 @@ def admin_dashboard(request):
         revenue_data.append(float(rev))
         expense_data.append(float(exp))
 
-    # Recent items
-    recent_orders = Order.objects.all().order_by('-created_at')[:10]
+    recent_orders = Order.objects.select_related('user').all().order_by('-created_at')[:10]
     recent_expenses = Expense.objects.all().order_by('-date')[:10]
 
     context = {

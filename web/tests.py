@@ -1,10 +1,14 @@
 import json
+import hmac
+import hashlib
 from io import BytesIO
 from PIL import Image
 from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
-from .models import User, Category, shoe, watch, Cart, CartItem, Order, ContactMessage
+from django.conf import settings
+from .models import User, Category, shoe, watch, Cart, CartItem, Order, ContactMessage, Product
+from .services import CartService, InventoryService, OrderService, PaymentService
 
 
 def create_test_image():
@@ -96,6 +100,148 @@ class ViewTests(TestCase):
         self.assertEqual(msg.name, 'John Doe')
 
 
+class ServiceLayerTests(TestCase):
+    def setUp(self):
+        self.cat = Category.objects.create(name="General")
+        self.shoe_item = shoe.objects.create(name="Air Force 1", category=self.cat, price=100.00, stock=10)
+        self.user = User.objects.create_user(username="serviceuser", email="service@example.com", password="password123")
+
+    def test_cart_service_add_and_get_data(self):
+        cart = CartService.get_or_create_cart(user=self.user)
+        CartService.add_to_cart(cart, 'shoe', self.shoe_item.id, quantity=2)
+        data = CartService.get_cart_data(cart)
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]['quantity'], 2)
+        self.assertEqual(data[0]['name'], 'Air Force 1')
+
+    def test_inventory_service_decrement(self):
+        items = [{'shoeId': self.shoe_item.id, 'quantity': 3}]
+        InventoryService.decrement_stock(json.dumps(items))
+        self.shoe_item.refresh_from_db()
+        self.assertEqual(self.shoe_item.stock, 7)
+
+    def test_order_service_creation_and_completion(self):
+        items = [{'shoeId': self.shoe_item.id, 'shoePrice': 100.00, 'quantity': 2}]
+        order = OrderService.create_order(
+            user=self.user,
+            cart_json=json.dumps(items),
+            delivery_address="123 Test St",
+            phone="08000000000",
+            payment_method="Bank Transfer"
+        )
+        self.assertEqual(order.total, 200.00)
+        self.assertFalse(order.complete)
+
+        OrderService.complete_order(order, reference="REF123456")
+        order.refresh_from_db()
+        self.assertTrue(order.complete)
+        self.assertEqual(order.status, "Paid")
+        self.assertEqual(order.transaction_id, "REF123456")
+
+        self.shoe_item.refresh_from_db()
+        self.assertEqual(self.shoe_item.stock, 8)
+
+
+class PaystackWebhookTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username="webhookuser", email="webhook@example.com", password="password123")
+        self.cat = Category.objects.create(name="Shoes")
+        self.shoe_item = shoe.objects.create(name="Runner", category=self.cat, price=50.00, stock=10)
+        items = [{'shoeId': self.shoe_item.id, 'shoePrice': 50.00, 'quantity': 1}]
+        self.order = OrderService.create_order(
+            user=self.user,
+            cart_json=json.dumps(items),
+            delivery_address="456 Webhook Ave",
+            phone="08011111111",
+            payment_method="Card Payment"
+        )
+
+    def test_webhook_invalid_signature(self):
+        payload = json.dumps({'event': 'charge.success'})
+        response = self.client.post(
+            reverse('paystack_webhook'),
+            data=payload,
+            content_type='application/json',
+            HTTP_X_PAYSTACK_SIGNATURE='bad_signature'
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_webhook_valid_signature_and_idempotency(self):
+        payload_data = {
+            'event': 'charge.success',
+            'data': {
+                'reference': 'PAYSTACK_REF_999',
+                'metadata': {
+                    'order_id': self.order.id
+                }
+            }
+        }
+        payload_bytes = json.dumps(payload_data).encode('utf-8')
+        signature = hmac.new(
+            settings.PAYSTACK_SECRET_KEY.encode('utf-8'),
+            payload_bytes,
+            hashlib.sha512
+        ).hexdigest()
+
+        # First webhook delivery
+        response = self.client.post(
+            reverse('paystack_webhook'),
+            data=payload_bytes,
+            content_type='application/json',
+            HTTP_X_PAYSTACK_SIGNATURE=signature
+        )
+        self.assertEqual(response.status_code, 200)
+
+        self.order.refresh_from_db()
+        self.assertTrue(self.order.complete)
+        self.assertEqual(self.order.status, "Paid")
+        self.shoe_item.refresh_from_db()
+        self.assertEqual(self.shoe_item.stock, 9)
+
+        # Duplicate webhook delivery (Idempotency check)
+        response_dup = self.client.post(
+            reverse('paystack_webhook'),
+            data=payload_bytes,
+            content_type='application/json',
+            HTTP_X_PAYSTACK_SIGNATURE=signature
+        )
+        self.assertEqual(response_dup.status_code, 200)
+        self.shoe_item.refresh_from_db()
+        # Stock should NOT be decremented again
+        self.assertEqual(self.shoe_item.stock, 9)
+
+
+@override_settings(
+    STORAGES={
+        "default": {"BACKEND": "django.core.files.storage.InMemoryStorage"},
+        "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+    },
+    DEFAULT_FILE_STORAGE="django.core.files.storage.InMemoryStorage",
+)
+class PaginationAndPerformanceTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.cat = Category.objects.create(name="BulkCategory")
+        for i in range(25):
+            dummy_img = create_test_image()
+            shoe.objects.create(name=f"Shoe {i}", target_audience="Male", category=self.cat, price=100 + i, image=dummy_img)
+
+    def test_men_view_pagination(self):
+        response = self.client.get(reverse('men'))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('page_obj', response.context)
+        page_obj = response.context['page_obj']
+        self.assertEqual(len(page_obj), 12)
+        self.assertEqual(page_obj.paginator.num_pages, 3)
+
+    def test_men_view_query_count(self):
+        # Ensure query count is bounded and optimized with select_related
+        with self.assertNumQueries(4):
+            response = self.client.get(reverse('men'))
+            self.assertEqual(response.status_code, 200)
+
+
 class DatabaseConfigTests(TestCase):
     def test_database_url_fallback_and_config(self):
         import os
@@ -109,20 +255,16 @@ class DatabaseConfigTests(TestCase):
     def test_format_render_database_url(self):
         from drop.settings import format_render_database_url
 
-        # Short Render database hostname
         short_url = "postgres://user:pass@dpg-db2hhvui0phs73enh0o0-a/drop_db"
         formatted = format_render_database_url(short_url)
         self.assertEqual(formatted, "postgres://user:pass@dpg-db2hhvui0phs73enh0o0-a.oregon-postgres.render.com/drop_db")
 
-        # Already formatted Render database hostname
         full_url = "postgres://user:pass@dpg-db2hhvui0phs73enh0o0-a.oregon-postgres.render.com/drop_db"
         self.assertEqual(format_render_database_url(full_url), full_url)
 
-        # Standard non-Render hostname
         local_url = "postgres://postgres:postgres@127.0.0.1:5432/my_store_db"
         self.assertEqual(format_render_database_url(local_url), local_url)
 
-        # Empty URL
         self.assertEqual(format_render_database_url(""), "")
 
 
@@ -135,14 +277,12 @@ class AdminPasswordResetTests(TestCase):
         from io import StringIO
 
         out = StringIO()
-        # Reset password for existing user or create
         call_command("reset_admin_password", username="admin_test", password="NewPassword123!", email="admin@test.com", stdout=out)
         user = User.objects.get(username="admin_test")
         self.assertTrue(user.check_password("NewPassword123!"))
         self.assertTrue(user.is_staff)
         self.assertTrue(user.is_superuser)
 
-        # Reset password again
         call_command("reset_admin_password", username="admin_test", password="UpdatedPassword123!", stdout=out)
         user.refresh_from_db()
         self.assertTrue(user.check_password("UpdatedPassword123!"))
@@ -263,7 +403,6 @@ class EmailNotificationTests(TestCase):
 
         mail.outbox = []
         send_order_notification(order.id, order.total, "1234567890")
-        # Should send 2 emails: 1 to admin, 1 to customer
         self.assertEqual(len(mail.outbox), 2)
         recipients = [m.to[0] for m in mail.outbox]
         self.assertIn("buyer@example.com", recipients)
@@ -289,9 +428,6 @@ class EmailNotificationTests(TestCase):
             'cart_json': cart_items
         })
         self.assertEqual(response.status_code, 302)
-
-        # Because CELERY_TASK_ALWAYS_EAGER = True, tasks execute synchronously and populate mail.outbox
-        # 2 from send_order_notification + 1 from send_order_receipt_email = 3 emails total
         self.assertEqual(len(mail.outbox), 3)
 
 

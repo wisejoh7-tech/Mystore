@@ -36,7 +36,7 @@ class User(AbstractUser):
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=100, null=False)
+    name = models.CharField(max_length=100, null=False, db_index=True)
     description = models.TextField(blank=True, null=True)
 
     def __str__(self):
@@ -44,73 +44,87 @@ class Category(models.Model):
 
 
 class watch(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, db_index=True)
     image = models.ImageField(upload_to='watchs/')
-    brand = models.CharField(max_length=100, null=True, blank=True)
+    brand = models.CharField(max_length=100, null=True, blank=True, db_index=True)
     description = models.TextField(blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='watchs')
-    price = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0.0, db_index=True)
     cost_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.0, help_text="What you paid for the item")
     discount_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Flash sale price")
-    stock = models.IntegerField(default=10)
+    stock = models.IntegerField(default=10, db_index=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['category', 'price']),
+            models.Index(fields=['brand', 'name']),
+        ]
 
     def __str__(self):
         return f"{self.brand or ''} {self.name}".strip()
 
 
 class shoe(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, db_index=True)
     image = models.ImageField(upload_to='shoes/')
-    brand = models.CharField(max_length=100, null=True, blank=True)
+    brand = models.CharField(max_length=100, null=True, blank=True, db_index=True)
     description = models.TextField(blank=True, null=True)
-    # Target audience was originally colliding with category
     AUDIENCE_CHOICES = [
         ('Male', 'Male'),
         ('Female', 'Female'),
         ('Collections', 'Collections'),
     ]
-    target_audience = models.CharField(max_length=100, choices=AUDIENCE_CHOICES, default='Collections')
+    target_audience = models.CharField(max_length=100, choices=AUDIENCE_CHOICES, default='Collections', db_index=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='shoes')
-    price = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0.0, db_index=True)
     cost_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.0, help_text="What you paid for the item")
     discount_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Flash sale price")
-    stock = models.IntegerField(default=10)
+    stock = models.IntegerField(default=10, db_index=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['target_audience', 'category']),
+            models.Index(fields=['category', 'price']),
+            models.Index(fields=['brand', 'name']),
+        ]
 
     def __str__(self):
         return f"{self.brand or ''} {self.name}".strip()
 
 
 class Product(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, db_index=True)
     image = models.ImageField(upload_to='products/')
-    brand = models.CharField(max_length=100, null=True, blank=True)
+    brand = models.CharField(max_length=100, null=True, blank=True, db_index=True)
     description = models.TextField(blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
-    price = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0.0, db_index=True)
     cost_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
     discount_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    stock = models.IntegerField(default=10)
-    created_at = models.DateTimeField(auto_now_add=True)
+    stock = models.IntegerField(default=10, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['category', 'created_at']),
+        ]
 
     def __str__(self):
         return f"[{self.category.name}] {self.name}"
 
 
-# --- OTP MODEL ---
 class OTP(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    code = models.CharField(max_length=6)
-    created_at = models.DateTimeField(auto_now_add=True)
+    code = models.CharField(max_length=6, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     def __str__(self):
         return f"OTP for {self.user.username}"
 
 
-# --- NEW MODELS ---
-
 class Cart(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
-    session_key = models.CharField(max_length=40, null=True, blank=True)  # for guest users
+    session_key = models.CharField(max_length=40, null=True, blank=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -155,7 +169,7 @@ class Review(models.Model):
     watch_item = models.ForeignKey(watch, related_name='reviews', on_delete=models.CASCADE, null=True, blank=True)
     rating = models.IntegerField(default=5, choices=[(i, i) for i in range(1, 6)])
     comment = models.TextField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     def __str__(self):
         prod = self.shoe_item or self.watch_item
@@ -171,15 +185,22 @@ class Order(models.Model):
         ('Cancelled', 'Cancelled'),
     )
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    # We will keep items_json for simplicity of snapshotting the items at the time of purchase
     items_json = models.TextField(help_text='JSON serialized cart items')
     total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     delivery_address = models.TextField(blank=True)
     phone = models.CharField(max_length=30, blank=True)
-    complete = models.BooleanField(default=False)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    complete = models.BooleanField(default=False, db_index=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending', db_index=True)
     confirmed_account_number = models.CharField(max_length=20, null=True, blank=True, help_text='Account number user confirmed they paid to')
     payment_method = models.CharField(max_length=50, default='Bank Transfer')
+    transaction_id = models.CharField(max_length=100, null=True, blank=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['user', 'created_at']),
+            models.Index(fields=['complete', 'status']),
+        ]
 
     @property
     def items_list(self):
@@ -187,7 +208,6 @@ class Order(models.Model):
             import json
             items = json.loads(self.items_json)
             for item in items:
-                # Standardize keys to avoid VariableDoesNotExist in templates
                 item['image'] = item.get('shoeImage') or item.get('watchImage') or item.get('productImage') or item.get('image') or ''
                 item['name'] = item.get('shoeName') or item.get('watchName') or item.get('productName') or item.get('name') or 'Item'
                 item['id'] = item.get('shoeId') or item.get('watchId') or item.get('productId') or item.get('id')
@@ -195,8 +215,6 @@ class Order(models.Model):
             return items
         except Exception:
             return []
-    transaction_id = models.CharField(max_length=100, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Order #{self.id} by {self.user or 'guest'} - {self.status}"
@@ -225,7 +243,7 @@ class Expense(models.Model):
     description = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='Other')
-    date = models.DateTimeField(auto_now_add=True)
+    date = models.DateTimeField(auto_now_add=True, db_index=True)
 
     def __str__(self):
         return f"{self.description} - ₦{self.amount}"
@@ -236,7 +254,7 @@ class ContactMessage(models.Model):
     email = models.EmailField()
     subject = models.CharField(max_length=200)
     message = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     def __str__(self):
         return f"Message from {self.name} - {self.subject}"

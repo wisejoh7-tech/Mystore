@@ -70,6 +70,7 @@ urlpatterns = [
     path("orders/invoice/<int:order_id>/", views.download_invoice, name="download_invoice"),
     path("payment/initiate/<int:order_id>/", views.initiate_payment, name="initiate_payment"),
     path("payment/verify/", views.verify_payment, name="verify_payment"),
+    path("payment/webhook/", views.paystack_webhook, name="paystack_webhook"),
     path("admin-dashboard/", views.admin_dashboard, name="admin_dashboard"),
     path("admin-register-home/", views.admin_register_home, name="admin_register_home"),
     path(".well-known/appspecific/<str:name>.json", views.handle_chrome_devtools, name="chrome_devtools"),

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container my-5">
+    <h2 class="mb-4">Banking & Financial Management</h2>
+    <div class="row">
+        <div class="col-md-3 mb-3">
+            <div class="card p-3 shadow-sm text-center">
+                <h6>Total Accounts</h6>
+                <h3 class="text-primary">{{ summary.total_accounts }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card p-3 shadow-sm text-center">
+                <h6>Ledger Balance</h6>
+                <h3 class="text-success">₦{{ summary.total_ledger_balance|floatformat:2 }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card p-3 shadow-sm text-center">
+                <h6>Available Balance</h6>
+                <h3 class="text-info">₦{{ summary.total_available_balance|floatformat:2 }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card p-3 shadow-sm text-center">
+                <h6>Bank Charges</h6>
+                <h3 class="text-danger">₦{{ summary.total_bank_charges|floatformat:2 }}</h3>
+            </div>
+        </div>
+    </div>
+
+    {% if summary.alerts %}
+    <div class="alert alert-warning mt-3">
+        <strong>Connection Alerts:</strong>
+        <ul>
+            {% for alert in summary.alerts %}
+            <li>{{ alert }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <div class="mt-4">
+        <h4>Connected Accounts</h4>
+        <div class="list-group">
+            {% for acc in summary.accounts %}
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>{{ acc.bank_name }}</strong> - {{ acc.account_name }} ({{ acc.mask }})
+                    <span class="badge bg-secondary ms-2">{{ acc.type }}</span>
+                </div>
+                <div>
+                    <span class="fw-bold me-3">₦{{ acc.balance|floatformat:2 }}</span>
+                    <span class="badge bg-success">{{ acc.status }}</span>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-muted">No bank accounts connected yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

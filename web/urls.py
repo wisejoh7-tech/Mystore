@@ -74,4 +74,14 @@ urlpatterns = [
     path("admin-dashboard/", views.admin_dashboard, name="admin_dashboard"),
     path("admin-register-home/", views.admin_register_home, name="admin_register_home"),
     path(".well-known/appspecific/<str:name>.json", views.handle_chrome_devtools, name="chrome_devtools"),
+
+    # Banking Integration URLs
+    path("banking/", views.bank_dashboard, name="bank_dashboard"),
+    path("banking/connect/initiate/", views.bank_connect_initiate, name="bank_connect_initiate"),
+    path("banking/connect/confirm/", views.bank_connect_confirm, name="bank_connect_confirm"),
+    path("banking/disconnect/<uuid:connection_id>/", views.bank_disconnect, name="bank_disconnect"),
+    path("banking/sync/<uuid:account_id>/", views.bank_sync_transactions, name="bank_sync_transactions"),
+    path("banking/import/<uuid:account_id>/", views.bank_import_statement, name="bank_import_statement"),
+    path("banking/reconcile/manual/", views.bank_manual_reconcile, name="bank_manual_reconcile"),
+    path("banking/webhook/<str:provider_name>/", views.bank_webhook_handler, name="bank_webhook_handler"),
 ]

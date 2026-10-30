@@ -1,0 +1,205 @@
+/* Banking Dashboard Styling */
+
+.banking-dashboard-container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+.banking-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--jumia-dark, #1a1a1a);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.banking-title-icon {
+    color: #673AB7;
+    font-size: 28px;
+}
+
+/* Summary Grid Cards */
+.banking-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.banking-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--jumia-border, #e5e5e5);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.banking-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.banking-card-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--jumia-light-text, #75757a);
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.banking-card-value {
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.banking-card-value.primary { color: #673AB7; }
+.banking-card-value.success { color: #2E7D32; }
+.banking-card-value.info { color: #0288D1; }
+.banking-card-value.danger { color: #D32F2F; }
+
+/* Connection Alerts */
+.banking-alert {
+    background: #FFF9C4;
+    border: 1px solid #FBC02D;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 20px;
+    color: #5D4037;
+    font-size: 13px;
+}
+
+.banking-alert-header {
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #E65100;
+}
+
+.banking-alert-list {
+    margin-left: 20px;
+    list-style-type: disc;
+}
+
+.banking-alert-list li {
+    margin-bottom: 4px;
+}
+
+/* Accounts Section */
+.banking-section {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid var(--jumia-border, #e5e5e5);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    padding: 24px;
+    margin-top: 30px;
+}
+
+.banking-section-header {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--jumia-dark, #1a1a1a);
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--jumia-border, #e5e5e5);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.banking-account-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.banking-account-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: #fafafa;
+    border: 1px solid var(--jumia-border, #e5e5e5);
+    border-radius: 8px;
+    transition: background 0.2s ease;
+}
+
+.banking-account-item:hover {
+    background: #f0f0f5;
+}
+
+.banking-account-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.banking-account-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--jumia-dark, #1a1a1a);
+}
+
+.banking-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+.banking-badge-type {
+    background: #EDE7F6;
+    color: #673AB7;
+}
+
+.banking-badge-active,
+.banking-badge-success {
+    background: #E8F5E9;
+    color: #2E7D32;
+}
+
+.banking-badge-inactive,
+.banking-badge-warning {
+    background: #FFF3E0;
+    color: #E65100;
+}
+
+.banking-account-balance {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.banking-balance-amount {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--jumia-dark, #1a1a1a);
+}
+
+.banking-empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--jumia-light-text, #75757a);
+    font-size: 14px;
+}
+
+/* Responsiveness */
+@media (max-width: 768px) {
+    .banking-account-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    .banking-account-balance {
+        width: 100%;
+        justify-content: space-between;
+    }
+}

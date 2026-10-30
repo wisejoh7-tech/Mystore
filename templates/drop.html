@@ -2,25 +2,24 @@
 <html lang="en">
 {% load static %}
 <head>
-  
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>drop</title>
-    <link rel="stylesheet" href="/static/css/bas.css">
-    <!-- <link rel="stylesheet" href="/static/css/side.css"> -->
-    
-    <script src="/static/bs/.js" defer></script>
+    <link rel="stylesheet" href="{% static 'css/bas.css' %}">
+    <link rel="stylesheet" href="{% static 'css/side.css' %}">
+
 </head>
 <body>
 <div class="sidebar" id="sidebar">
 
 <div class="logo">
-    
+
 <span class="logo-text">M-SoftTec</span>
-<i class="bx-menu" id="togglebtn"><img src="/static/css/image/side bar.png" alt=""></i>
+<i class="bx-menu" id="togglebtn"><img src="{% static 'css/image/side bar.png' %}" alt=""></i>
 </div>
 <div class="profile">
-<img src="/static/css/image/manjo.jpg" alt="">
+<img src="{% static 'css/image/manjo.jpg' %}" alt="">
 <div class="profile-info">
 
     <h4>Manjo A.</h4>
@@ -32,62 +31,62 @@
 
 <div class="menu">
 <div class="menu-item">
-    <i class="bx-bx-grid"><img src="/static/css/image/dashboard.png" alt=""></i>
-<a href="/templates/men.html"></a><span>Men</span>
+    <i class="bx-bx-grid"><img src="{% static 'css/image/dashboard.png' %}" alt=""></i>
+<a href="{% url 'men' %}"><span>Men</span></a>
 <div class="tootip"></div>
 
 </div>
 
 <div class="menu-item">
-    <i class="bx-bx-grid"><img src="/static/css/image/product.jpg" alt=""></i>
-<a  href="{% url 'collection' %}"><span>Product</span>
+    <i class="bx-bx-grid"><img src="{% static 'css/image/product.jpg' %}" alt=""></i>
+<a href="{% url 'collection' %}"><span>Product</span></a>
 <div class="tootip"></div>
 
 </div>
 <div class="menu-item">
-    <i class="bx-bx-grid"><img src="/static/css/image/category.png" alt=""></i>
-<a href="/templates/collection.html"><span>Collection</span></a>
+    <i class="bx-bx-grid"><img src="{% static 'css/image/category.png' %}" alt=""></i>
+<a href="{% url 'collection' %}"><span>Collection</span></a>
 <div class="tootip"></div>
 
 </div>
 <div class="menu-item">
-    <i class="bx bx-store"><img src="/static/css/image/cart.png" alt=""></i>
-<a href="/templates/order.html"><span>Order</span></a>
+    <i class="bx bx-store"><img src="{% static 'css/image/cart.png' %}" alt=""></i>
+<a href="{% url 'orders' %}"><span>Order</span></a>
 <div class="tootip"></div>
 
 </div>
 <div class="menu-item">
-    <i class="bx bx-map"><img src="/static/css/image/customer.png" alt=""></i>
+    <i class="bx bx-map"><img src="{% static 'css/image/customer.png' %}" alt=""></i>
 <span>Customer</span>
 <div class="tootip"></div>
 
 </div>
 <div class="menu-item">
-    <i class="bx bx-map"><img src="/static/css/image/sales offer.jpg" alt=""></i>
+    <i class="bx bx-map"><img src="{% static 'css/image/sales offer.jpg' %}" alt=""></i>
 <span>Sales Offers</span>
 <div class="tootip"></div>
 
 </div>
 <div class="menu-item">
-    <i class="bx bx-map"><img src="/static/css/image/dealership.png" alt=""></i>
+    <i class="bx bx-map"><img src="{% static 'css/image/dealership.png' %}" alt=""></i>
 <span> Dealership</span>
 <div class="tootip"></div>
 
 </div>
 <div class="menu-item">
-    <i class="bx bx-map"><img src="/static/css/image/location.png" alt=""></i>
+    <i class="bx bx-map"><img src="{% static 'css/image/location.png' %}" alt=""></i>
 <span>Location</span>
 <div class="tootip"></div>
 
 </div>
 <div class="menu-item">
-    <i class="bx bx-map"><img src="/static/css/image/settings.png" alt=""></i>
+    <i class="bx bx-map"><img src="{% static 'css/image/settings.png' %}" alt=""></i>
 <span>Settings</span>
 <div class="tootip"></div>
 
 </div>
 <div class="menu-item">
-    <i class="bx bx-map"><img src="/static/css/image/logout.png" alt=""></i>
+    <i class="bx bx-map"><img src="{% static 'css/image/logout.png' %}" alt=""></i>
 <span>Logout</span>
 <div class="tootip"></div>
 
@@ -95,7 +94,7 @@
 <div class="button">
     <div class="toggle-dark">
 
-<i class="bx-bx-sun mode-icon" id="modeicon"><img src="/static/css/image/sun.png" alt=""></i>
+<i class="bx-bx-sun mode-icon" id="modeicon"><img src="{% static 'css/image/sun.png' %}" alt=""></i>
 <span class="hideIcon">Dark Mode</span>
 <label class="switch" for="">
     <input type="checkbox" id="darkmodeToggle">

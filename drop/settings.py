@@ -338,6 +338,7 @@ STATICFILES_DIRS = [
 ]
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
+os.makedirs(STATIC_ROOT, exist_ok=True)
 
 
 # -------------------------------------------------
@@ -454,10 +455,10 @@ if not DEBUG:
 
     # CSP Settings (Adjust based on your external assets)
     CSP_DEFAULT_SRC = ("'self'",)
-    CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "fonts.googleapis.com", "cdn.jsdelivr.net")
-    CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", "'unsafe-eval'", "cdn.jsdelivr.net")
+    CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "fonts.googleapis.com", "cdn.jsdelivr.net", "cdnjs.cloudflare.com")
+    CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", "'unsafe-eval'", "cdn.jsdelivr.net", "js.paystack.co")
     CSP_IMG_SRC = ("'self'", "data:", "res.cloudinary.com")
-    CSP_FONT_SRC = ("'self'", "fonts.gstatic.com")
+    CSP_FONT_SRC = ("'self'", "fonts.gstatic.com", "cdnjs.cloudflare.com")
 
 
 # -------------------------------------------------

@@ -9,4 +9,5 @@ pip install -r requirements.txt
 python manage.py collectstatic --no-input
 
 # Run migrations
+python manage.py fix_migration_history
 python manage.py migrate

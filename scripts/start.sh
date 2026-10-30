@@ -6,6 +6,9 @@ set -e
 echo "--- Starting Production Startup Script ---"
 
 # 1. Run Migrations
+echo "Fixing Migration History if needed..."
+python manage.py fix_migration_history
+
 echo "Running Migrations..."
 python manage.py migrate --noinput
 

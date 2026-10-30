@@ -266,3 +266,13 @@
     object-fit: cover;
     margin-bottom: 8px;
 }
+
+@media (max-width: 768px) {
+    .cart-layout {
+        flex-direction: column;
+    }
+    .cart-left, .cart-right {
+        width: 100%;
+        min-width: 100%;
+    }
+}

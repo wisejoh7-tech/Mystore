@@ -281,3 +281,27 @@
     color: #666;
     margin-top: 20px;
 }
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 768px) {
+    .store-container {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .store-sidebar {
+        width: 100%;
+        position: static;
+    }
+
+    .all-categories-container,
+    .category-detail-container {
+        padding: 0 10px;
+        margin: 20px auto;
+    }
+
+    .categories-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+}

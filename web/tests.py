@@ -477,3 +477,47 @@ class MiddlewareTests(TestCase):
         chunks = asyncio.run(consume())
         response.close()
         self.assertTrue(len(chunks) > 0)
+
+
+class FixMigrationHistoryTests(TestCase):
+    def test_fix_migration_history_when_consistent(self):
+        from django.core.management import call_command
+        from io import StringIO
+
+        out = StringIO()
+        call_command("fix_migration_history", stdout=out)
+        self.assertIn("Migration history is consistent.", out.getvalue())
+
+    def test_fix_migration_history_inserts_web_initial(self):
+        from django.core.management import call_command
+        from django.db import connection
+        from io import StringIO
+
+        with connection.cursor() as cursor:
+            cursor.execute("DELETE FROM django_migrations WHERE app = 'web' AND name = '0001_initial';")
+
+        out = StringIO()
+        call_command("fix_migration_history", stdout=out)
+        self.assertIn("Successfully reconciled migration history.", out.getvalue())
+
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT COUNT(*) FROM django_migrations WHERE app = 'web' AND name = '0001_initial';")
+            self.assertEqual(cursor.fetchone()[0], 1)
+
+    def test_fix_migration_history_removes_dependents_when_user_table_missing(self):
+        from django.core.management import call_command
+        from django.db import connection
+        from unittest.mock import patch
+        from io import StringIO
+
+        with connection.cursor() as cursor:
+            cursor.execute("DELETE FROM django_migrations WHERE app = 'web' AND name = '0001_initial';")
+
+        with patch("django.db.backends.base.introspection.BaseDatabaseIntrospection.table_names", return_value=["django_migrations"]):
+            out = StringIO()
+            call_command("fix_migration_history", stdout=out)
+            self.assertIn("Removing dependent initial migrations", out.getvalue())
+
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT COUNT(*) FROM django_migrations WHERE app = 'admin' AND name = '0001_initial';")
+            self.assertEqual(cursor.fetchone()[0], 0)

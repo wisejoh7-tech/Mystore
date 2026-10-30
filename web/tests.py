@@ -431,6 +431,28 @@ class EmailNotificationTests(TestCase):
         self.assertEqual(len(mail.outbox), 3)
 
 
+class GoogleOAuthTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+    def test_google_login_url_resolution_and_redirect(self):
+        google_login_url = reverse('google_login')
+        self.assertEqual(google_login_url, '/accounts/google/login/')
+
+        response = self.client.get(google_login_url)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.url.startswith('https://accounts.google.com/o/oauth2/v2/auth'))
+        self.assertIn('client_id=', response.url)
+
+    def test_google_oauth_settings_configured(self):
+        google_config = settings.SOCIALACCOUNT_PROVIDERS.get('google', {})
+        self.assertIn('SCOPE', google_config)
+        self.assertIn('email', google_config['SCOPE'])
+        self.assertIn('profile', google_config['SCOPE'])
+        self.assertIn('APP', google_config)
+        self.assertIn('secret', google_config['APP'])
+
+
 class MiddlewareTests(TestCase):
     @override_settings(DEBUG=True)
     def test_async_whitenoise_file_response(self):

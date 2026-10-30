@@ -31,8 +31,9 @@ echo "Starting Gunicorn with Uvicorn Workers on port ${PORT:-8000}..."
 # Use gunicorn for production as it's more robust than running uvicorn directly
 # -k uvicorn.workers.UvicornWorker allows it to handle ASGI (Channels)
 exec gunicorn drop.asgi:application \
+    -k uvicorn.workers.UvicornWorker \
+    -w 1 \
+    --timeout 120 \
     --bind 0.0.0.0:${PORT:-8000} \
-    --workers 4 \
-    --worker-class uvicorn.workers.UvicornWorker \
     --access-logformat '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"' \
     --access-logfile -

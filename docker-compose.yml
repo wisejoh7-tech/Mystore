@@ -33,7 +33,7 @@ services:
       sh -c "python manage.py fix_migration_history &&
              python manage.py migrate &&
              python manage.py collectstatic --noinput &&
-             gunicorn drop.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000"
+             gunicorn drop.asgi:application -k uvicorn.workers.UvicornWorker -w 1 --timeout 120 --bind 0.0.0.0:8000"
 
   celery:
     build: .

@@ -63,6 +63,11 @@ DEBUG = os.getenv("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = [host.strip() for host in os.getenv("ALLOWED_HOSTS", "drop-web.onrender.com,localhost,127.0.0.1").split(",") if host.strip()]
 
+# Allow wildcard onrender subdomains for Render deployments
+for default_render_host in ("drop-web.onrender.com", ".onrender.com"):
+    if default_render_host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(default_render_host)
+
 RENDER_EXTERNAL_HOSTNAME = os.getenv("RENDER_EXTERNAL_HOSTNAME")
 if RENDER_EXTERNAL_HOSTNAME and RENDER_EXTERNAL_HOSTNAME not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
@@ -390,6 +395,7 @@ STORAGES = {
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 WHITENOISE_MANIFEST_STRICT = False
+WHITENOISE_USE_FINDERS = True
 
 
 # -------------------------------------------------
@@ -459,6 +465,17 @@ if not DEBUG:
     CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", "'unsafe-eval'", "cdn.jsdelivr.net", "js.paystack.co")
     CSP_IMG_SRC = ("'self'", "data:", "res.cloudinary.com")
     CSP_FONT_SRC = ("'self'", "fonts.gstatic.com", "cdnjs.cloudflare.com")
+
+    # django-csp 4.0+ configuration format
+    CONTENT_SECURITY_POLICY = {
+        "DIRECTIVES": {
+            "default-src": CSP_DEFAULT_SRC,
+            "style-src": CSP_STYLE_SRC,
+            "script-src": CSP_SCRIPT_SRC,
+            "img-src": CSP_IMG_SRC,
+            "font-src": CSP_FONT_SRC,
+        }
+    }
 
 
 # -------------------------------------------------

@@ -25,8 +25,22 @@ class AsyncWhiteNoiseFileResponse(WhiteNoiseFileResponse):
 class AsyncWhiteNoiseMiddleware(WhiteNoiseMiddleware):
     """
     Subclass WhiteNoiseMiddleware to return AsyncWhiteNoiseFileResponse instead
-    of standard WhiteNoiseFileResponse.
+    of standard WhiteNoiseFileResponse, with fallback to finding files on demand.
     """
+
+    def __call__(self, request):
+        if self.autorefresh:
+            static_file = self.find_file(request.path_info)
+        else:
+            static_file = self.files.get(request.path_info)
+            if static_file is None and self.use_finders and request.path_info.startswith(self.static_prefix):
+                static_file = self.find_file(request.path_info)
+                if static_file is not None:
+                    self.files[request.path_info] = static_file
+
+        if static_file is not None:
+            return self.serve(static_file, request)
+        return self.get_response(request)
 
     @staticmethod
     def serve(static_file, request):

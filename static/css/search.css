@@ -31,3 +31,9 @@
     color: inherit;
     display: block;
 }
+
+.product-img.no-image {
+    background-color: #f0f0f0;
+    min-height: 150px;
+    border-radius: 4px;
+}

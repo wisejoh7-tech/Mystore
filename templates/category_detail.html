@@ -46,7 +46,11 @@
         {% for s in shoes %}
             <div class="product-card shoe">
                 <a href="{% url 'product_detail' 'shoe' s.id %}" class="product-link">
+                    {% if s.image %}
                     <img src="{{ s.image.url }}" alt="{{ s.name }}" class="product-img">
+                    {% else %}
+                    <div class="no-image-placeholder">No image</div>
+                    {% endif %}
                     <div class="product-info-wrap">
                         <div class="brand">{{ s.brand }}</div>
                         <div class="name">{{ s.name }}</div>
@@ -59,7 +63,11 @@
         {% for w in watches %}
             <div class="product-card watch">
                 <a href="{% url 'product_detail' 'watch' w.id %}" class="product-link">
+                    {% if w.image %}
                     <img src="{{ w.image.url }}" alt="{{ w.name }}" class="product-img">
+                    {% else %}
+                    <div class="no-image-placeholder">No image</div>
+                    {% endif %}
                     <div class="product-info-wrap">
                         <div class="brand">{{ w.brand }}</div>
                         <div class="name">{{ w.name }}</div>

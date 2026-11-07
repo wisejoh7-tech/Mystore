@@ -40,7 +40,7 @@
 
             <button class="add-btn add-to-cart-btn"
                 data-shoe-id="{{ shoe.id }}"
-                data-shoe-image="{{ shoe.image.url }}"
+                data-shoe-image="{% if shoe.image %}{{ shoe.image.url }}{% endif %}"
                 data-shoe-name="{{ shoe.name }}"
                 data-shoe-brand="{{ shoe.brand }}"
                 data-shoe-price="{{ shoe.discount_price|default:shoe.price }}"
@@ -71,7 +71,7 @@
 
             <button class="add-btn add-to-cart-btn"
                 data-watch-id="{{ watch.id }}"
-                data-watch-image="{{ watch.image.url }}"
+                data-watch-image="{% if watch.image %}{{ watch.image.url }}{% endif %}"
                 data-watch-name="{{ watch.name }}"
                 data-watch-brand="{{ watch.brand }}"
                 data-watch-price="{{ watch.discount_price|default:watch.price }}"

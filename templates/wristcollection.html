@@ -53,7 +53,7 @@
 
           <button class="add-btn add-to-cart-btn"
               data-watch-id="{{ watch.id }}"
-              data-watch-image="{{ watch.image.url }}"
+              data-watch-image="{% if watch.image %}{{ watch.image.url }}{% endif %}"
               data-watch-name="{{ watch.name }}"
               data-watch-brand="{{ watch.brand }}"
               data-watch-price="{{ watch.discount_price|default:watch.price }}"

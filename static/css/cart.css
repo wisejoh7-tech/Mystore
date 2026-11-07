@@ -267,6 +267,11 @@
     margin-bottom: 8px;
 }
 
+.upsell-img.no-image {
+    background-color: #f0f0f0;
+    border-radius: 4px;
+}
+
 @media (max-width: 768px) {
     .cart-layout {
         flex-direction: column;

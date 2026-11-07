@@ -429,20 +429,26 @@ def product_detail(request, prod_type, pk):
     recently_viewed.insert(0, item_id)
     request.session['recently_viewed'] = recently_viewed[:6]
 
-    reviews = product.reviews.select_related('user').all().order_by('-created_at')
-    average_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
+    if hasattr(product, 'reviews'):
+        reviews = product.reviews.select_related('user').all().order_by('-created_at')
+        average_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
+    else:
+        reviews = []
+        average_rating = 0
 
     if prod_type == 'shoe':
         related_products = shoe.objects.select_related('category').filter(category=product.category).exclude(pk=product.pk)[:4]
-    else:
+    elif prod_type == 'watch':
         related_products = watch.objects.select_related('category').filter(category=product.category).exclude(pk=product.pk)[:4]
+    else:
+        related_products = Product.objects.select_related('category').filter(category=product.category).exclude(pk=product.pk)[:4]
 
     in_wishlist = False
     if request.user.is_authenticated:
         wishlist, _ = Wishlist.objects.get_or_create(user=request.user)
         if prod_type == 'shoe':
             in_wishlist = wishlist.shoes.filter(id=product.id).exists()
-        else:
+        elif prod_type == 'watch':
             in_wishlist = wishlist.watches.filter(id=product.id).exists()
 
     context = {

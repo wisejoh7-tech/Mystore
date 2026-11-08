@@ -5,8 +5,14 @@
     justify-content: center;
     min-height: 85vh;
     padding: 40px 20px;
-    background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.65)),
-                url('/static/images/user_login_bg.jpg') center/cover no-repeat fixed;
+    background-color: #1a1a1a;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.65)),
+                      url('../images/user_login_bg.jpg'),
+                      url('/static/images/user_login_bg.jpg');
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
 }
 
 .premium-auth-card {

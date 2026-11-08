@@ -463,7 +463,7 @@ if not DEBUG:
     CSP_DEFAULT_SRC = ("'self'",)
     CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "fonts.googleapis.com", "cdn.jsdelivr.net", "cdnjs.cloudflare.com")
     CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", "'unsafe-eval'", "cdn.jsdelivr.net", "js.paystack.co")
-    CSP_IMG_SRC = ("'self'", "data:", "res.cloudinary.com")
+    CSP_IMG_SRC = ("'self'", "data:", "res.cloudinary.com", "images.unsplash.com")
     CSP_FONT_SRC = ("'self'", "fonts.gstatic.com", "cdnjs.cloudflare.com")
 
     # django-csp 4.0+ configuration format

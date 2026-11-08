@@ -35,8 +35,14 @@ html, body, .wrapper {
 
 /* Jazzmin Admin Login Page Background */
 .login-page {
-    background: linear-gradient(135deg, rgba(246, 139, 30, 0.9) 0%, rgba(217, 116, 12, 0.95) 100%),
-                url('/static/images/admin_login_bg.jpg') center/cover no-repeat fixed !important;
+    background-color: var(--primary-orange) !important;
+    background-image: linear-gradient(135deg, rgba(246, 139, 30, 0.9) 0%, rgba(217, 116, 12, 0.95) 100%),
+                      url('../images/admin_login_bg.jpg'),
+                      url('/static/images/admin_login_bg.jpg') !important;
+    background-position: center !important;
+    background-size: cover !important;
+    background-repeat: no-repeat !important;
+    background-attachment: fixed !important;
 }
 
 .login-box {

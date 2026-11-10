@@ -156,7 +156,7 @@
 
 .hero-slider {
     flex: 1;
-    background: var(--jumia-dark);
+    background: #1a1a1a;
     border-radius: 4px;
     position: relative;
     overflow: hidden;
@@ -171,8 +171,10 @@
     height: 100%;
     opacity: 0;
     transition: opacity 0.5s ease-in-out;
+    background-color: #222;
     background-size: cover;
     background-position: center;
+    background-repeat: no-repeat;
 }
 
 .slide.active {

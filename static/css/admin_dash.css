@@ -3,8 +3,14 @@
 .admin-dashboard-wrapper {
     min-height: 100vh;
     padding: 30px 0 50px 0;
-    background: linear-gradient(rgba(245, 247, 250, 0.88), rgba(245, 247, 250, 0.94)),
-                url('/static/images/admin_dash_bg.jpg') center/cover no-repeat fixed;
+    background-color: #f5f7fa;
+    background-image: linear-gradient(rgba(245, 247, 250, 0.88), rgba(245, 247, 250, 0.94)),
+                      url('../images/admin_dash_bg.jpg'),
+                      url('/static/images/admin_dash_bg.jpg');
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
 }
 
 .admin-dashboard-container {

@@ -228,7 +228,7 @@ body {
   .add-to-cart-btn{padding:7px 10px;font-size:14px}
 }
 
-Remove background image for men.html and women.html
+/* Remove background image for men.html and women.html */
 .page {
   background-image: none !important;
   background-color: #fff;
